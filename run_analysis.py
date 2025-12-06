@@ -107,9 +107,10 @@ def show_menu():
         ("2", "DataForSEO API Collection", "dataforseo_collection.py", "~20-30 minutes, ~$6.45"),
         ("3", "GEO (JSON-LD) Analysis", "geo_analyzer.py", "~30 seconds"),
         ("4", "Google Data (GSC & GA4)", "google_integration.py", "~10 seconds"),
-        ("5", "Performance Analysis", "performance_check.py", "~2-3 minutes"),
-        ("6", "Generate HTML Report", "generate_report.py", "~5 seconds"),
-        ("7", "Export Data (CSV/Excel/PDF)", "export_data.py", "~10 seconds"),
+        ("5", "LLM Insights & Strategy", "llm_runner.py", "~1-2 minutes"),
+        ("6", "Performance Analysis", "performance_check.py", "~2-3 minutes"),
+        ("7", "Generate HTML Report", "generate_report.py", "~5 seconds"),
+        ("8", "Export Data (CSV/Excel/PDF)", "export_data.py", "~10 seconds"),
         ("A", "Run ALL Steps (Complete Analysis)", "", "~25-35 minutes total"),
         ("Q", "Quit", "", "")
     ]
@@ -280,10 +281,13 @@ def main():
             run_script("google_integration.py", "Google Data Integration")
 
         elif choice == "5":
-            run_script("performance_check.py", "Performance Analysis")
+            run_script("llm_runner.py", "LLM Strategic Analysis")
 
         elif choice == "6":
-            if check_prerequisites("6"):
+            run_script("performance_check.py", "Performance Analysis")
+
+        elif choice == "7":
+            if check_prerequisites("7"):
                 if os.path.exists("generate_report.py"):
                     run_script("generate_report.py", "HTML Report Generation")
                 else:
