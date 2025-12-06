@@ -1,0 +1,57 @@
+# SEO Gap Analyzer Configuration
+# Example: B2B SaaS Company
+
+target:
+  domain: "yourcompany.com"
+  name: "Your SaaS Platform"
+  industry: "B2B SaaS - Project Management"
+
+competitors:
+  - domain: "asana.com"
+    name: "Asana"
+  - domain: "monday.com"
+    name: "Monday.com"
+  - domain: "clickup.com"
+    name: "ClickUp"
+  - domain: "notion.so"
+    name: "Notion"
+
+location:
+  country: "United States"
+  language_code: "en"
+
+branding:
+  primary_color: "#6366f1"
+  primary_dark: "#4f46e5"
+  accent_color: "#10b981"
+  logo_emoji: "🚀"
+
+analysis:
+  keywords_per_domain: 100
+  test_urls:
+    homepage: ""
+    product: ""  # /pricing or /product
+    category: ""  # /solutions or /features
+    blog: ""  # /blog/example-post
+  performance_urls:
+    - ""
+    - ""
+    - ""
+
+seed_keywords:
+  - "project management software"
+  - "team collaboration tools"
+  - "task management"
+
+report:
+  company_name: "Your SaaS Platform"
+  report_title: "B2B SEO Gap Analysis"
+  author: "Marketing Team"
+  include_sections:
+    - executive_summary
+    - sitemap_analysis
+    - social_presence
+    - keyword_gaps
+    - geo_optimization
+    - performance_audit
+    - recommendations

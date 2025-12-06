@@ -1,0 +1,57 @@
+# SEO Gap Analyzer Configuration
+# Example: D2C E-commerce Brand
+
+target:
+  domain: "yourbrand.com"
+  name: "Your D2C Brand"
+  industry: "D2C E-commerce - Fashion"
+
+competitors:
+  - domain: "competitor1.com"
+    name: "Competitor Brand 1"
+  - domain: "competitor2.com"
+    name: "Competitor Brand 2"
+  - domain: "competitor3.com"
+    name: "Competitor Brand 3"
+  - domain: "competitor4.com"
+    name: "Competitor Brand 4"
+
+location:
+  country: "United States"
+  language_code: "en"
+
+branding:
+  primary_color: "#ec4899"
+  primary_dark: "#db2777"
+  accent_color: "#8b5cf6"
+  logo_emoji: "👗"
+
+analysis:
+  keywords_per_domain: 100
+  test_urls:
+    homepage: ""
+    product: ""  # /products/example-item
+    category: ""  # /collections/category-name
+    blog: ""  # /blogs/style-guide
+  performance_urls:
+    - ""  # Homepage
+    - ""  # Popular product page
+    - ""  # Popular collection page
+
+seed_keywords:
+  - "sustainable fashion"
+  - "women's clothing"
+  - "eco-friendly apparel"
+
+report:
+  company_name: "Your D2C Brand"
+  report_title: "D2C SEO Gap Analysis"
+  author: "Growth Team"
+  include_sections:
+    - executive_summary
+    - sitemap_analysis
+    - social_presence
+    - keyword_gaps
+    - geo_optimization
+    - performance_audit
+    - recommendations

@@ -1,0 +1,69 @@
+# SEO Gap Analyzer Configuration
+# Copy this file to config.yaml and customize for your brand
+
+# Target website to analyze
+target:
+  domain: "yourbrand.com"  # Without https:// or www.
+  name: "Your Brand Name"
+  industry: "E-commerce"  # E.g., E-commerce, SaaS, B2B Services, etc.
+
+# Competitor domains (up to 10)
+competitors:
+  - domain: "competitor1.com"
+    name: "Competitor One"
+  - domain: "competitor2.com"
+    name: "Competitor Two"
+  - domain: "competitor3.com"
+    name: "Competitor Three"
+  - domain: "competitor4.com"
+    name: "Competitor Four"
+
+# Geographic and language settings
+location:
+  country: "United States"  # Full country name (e.g., "India", "United Kingdom", "Canada")
+  language_code: "en"       # ISO language code (e.g., "en", "es", "fr", "de")
+
+# Branding (colors for HTML report)
+branding:
+  primary_color: "#3b82f6"      # Primary brand color (hex)
+  primary_dark: "#2563eb"        # Darker shade of primary
+  accent_color: "#10b981"        # Accent color
+  logo_emoji: "🚀"               # Emoji to represent brand
+
+# Analysis settings
+analysis:
+  # Number of top keywords to collect per domain
+  keywords_per_domain: 100
+
+  # Test URLs for GEO analysis (leave empty for auto-detection)
+  test_urls:
+    homepage: ""                # Auto: https://yourbrand.com/
+    product: ""                 # Example: https://yourbrand.com/products/example
+    category: ""                # Example: https://yourbrand.com/category/example
+    blog: ""                    # Example: https://yourbrand.com/blog/example-post
+
+  # Performance test URLs (leave empty for auto-detection)
+  performance_urls:
+    - ""  # Homepage (auto-detected)
+    - ""  # Add specific URLs to test
+    - ""
+
+# Seed keywords for keyword ideas
+seed_keywords:
+  - "your main product"
+  - "your service"
+  - "your industry term"
+
+# Report settings
+report:
+  company_name: "Your Brand Name"
+  report_title: "SEO Gap Analysis"
+  author: "SEO Team"
+  include_sections:
+    - executive_summary
+    - sitemap_analysis
+    - social_presence
+    - keyword_gaps
+    - geo_optimization
+    - performance_audit
+    - recommendations

@@ -1,0 +1,62 @@
+# SEO Gap Analyzer - Git Ignore
+
+# Environment and credentials
+.env
+.env.local
+config.yaml
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+venv/
+ENV/
+env/
+
+# Analysis outputs
+output/
+reports/*.html
+reports/*.json
+reports/*.csv
+!reports/.gitkeep
+
+# DataForSEO API results
+dataforseo_*.json
+analysis_data_*.json
+geo_analysis.json
+performance_analysis.json
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+tmp/
+temp/
+*.tmp

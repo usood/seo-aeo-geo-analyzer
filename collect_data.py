@@ -1,0 +1,284 @@
+#!/usr/bin/env python3
+"""
+Keyword Gap Analysis Data Collection Script
+For: unleashwellness.co
+Date: December 5, 2025
+"""
+
+import requests
+import json
+import xml.etree.ElementTree as ET
+from bs4 import BeautifulSoup
+from urllib.parse import urljoin, urlparse
+import time
+from datetime import datetime
+
+# Configuration
+TARGET_DOMAIN = "unleashwellness.co"
+COMPETITORS = {
+    "k9vitality.in": "K9 Vitality",
+    "absolutpet.in": "Absolut Pet",
+    "dogseechew.in": "Dogsee Chew",
+    "furballstory.com": "Furball Story"
+}
+LOCATION = "India"
+LANGUAGE = "en"
+
+# Results storage
+results = {
+    "metadata": {
+        "target_domain": TARGET_DOMAIN,
+        "competitors": COMPETITORS,
+        "location": LOCATION,
+        "language": LANGUAGE,
+        "analysis_date": datetime.now().isoformat()
+    },
+    "sitemap_analysis": {},
+    "social_profiles": {},
+    "domain_metrics": {},
+    "ranked_keywords": {},
+    "keyword_gaps": {}
+}
+
+
+def fetch_sitemap(domain):
+    """Fetch and parse sitemap.xml"""
+    print(f"\n[Sitemap] Fetching sitemap for {domain}...")
+
+    sitemap_urls = [
+        f"https://{domain}/sitemap.xml",
+        f"https://{domain}/sitemap_index.xml",
+        f"https://www.{domain}/sitemap.xml",
+    ]
+
+    for sitemap_url in sitemap_urls:
+        try:
+            response = requests.get(sitemap_url, timeout=15, headers={
+                'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'
+            })
+
+            if response.status_code == 200:
+                print(f"✓ Found sitemap at: {sitemap_url}")
+
+                # Parse XML
+                root = ET.fromstring(response.content)
+
+                # Check if it's a sitemap index
+                namespaces = {'sm': 'http://www.sitemaps.org/schemas/sitemap/0.9'}
+
+                # Try to find sitemap elements (sitemap index)
+                sitemaps = root.findall('.//sm:sitemap', namespaces)
+                if sitemaps:
+                    print(f"  Found sitemap index with {len(sitemaps)} sitemaps")
+                    all_urls = []
+
+                    # Fetch each sub-sitemap
+                    for sitemap in sitemaps[:10]:  # Limit to first 10 sitemaps
+                        loc = sitemap.find('sm:loc', namespaces)
+                        if loc is not None:
+                            sub_sitemap_url = loc.text
+                            print(f"  Fetching sub-sitemap: {sub_sitemap_url}")
+                            try:
+                                sub_response = requests.get(sub_sitemap_url, timeout=15, headers={
+                                    'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'
+                                })
+                                if sub_response.status_code == 200:
+                                    sub_root = ET.fromstring(sub_response.content)
+                                    sub_urls = parse_sitemap_urls(sub_root, namespaces)
+                                    all_urls.extend(sub_urls)
+                            except Exception as e:
+                                print(f"    Error fetching sub-sitemap: {e}")
+
+                    return analyze_sitemap_urls(all_urls, domain)
+
+                # Otherwise, parse as regular sitemap
+                urls = parse_sitemap_urls(root, namespaces)
+                return analyze_sitemap_urls(urls, domain)
+
+        except Exception as e:
+            print(f"  Error with {sitemap_url}: {e}")
+            continue
+
+    return {"error": "No sitemap found", "total_urls": 0}
+
+
+def parse_sitemap_urls(root, namespaces):
+    """Parse URLs from sitemap XML"""
+    urls = []
+
+    for url_elem in root.findall('.//sm:url', namespaces):
+        loc = url_elem.find('sm:loc', namespaces)
+        lastmod = url_elem.find('sm:lastmod', namespaces)
+
+        if loc is not None:
+            url_data = {
+                'url': loc.text,
+                'lastmod': lastmod.text if lastmod is not None else None,
+            }
+            urls.append(url_data)
+
+    return urls
+
+
+def categorize_url(url):
+    """Categorize URL by type (Shopify theme)"""
+    url_lower = url.lower()
+
+    if '/products/' in url_lower:
+        return 'product'
+    elif '/collections/' in url_lower:
+        return 'category'
+    elif '/blogs/' in url_lower or '/articles/' in url_lower:
+        return 'content'
+    elif '/pages/' in url_lower:
+        return 'static'
+    else:
+        return 'other'
+
+
+def analyze_sitemap_urls(urls, domain):
+    """Analyze sitemap URLs and categorize"""
+    print(f"  Analyzing {len(urls)} URLs...")
+
+    categorization = {
+        'product': 0,
+        'content': 0,
+        'category': 0,
+        'static': 0,
+        'other': 0
+    }
+
+    for url_data in urls:
+        url_type = categorize_url(url_data['url'])
+        categorization[url_type] += 1
+        url_data['type'] = url_type
+
+    # Calculate freshness (URLs modified in last 90 days)
+    fresh_count = 0
+    if urls:
+        from datetime import datetime, timedelta
+        cutoff_date = datetime.now() - timedelta(days=90)
+
+        for url_data in urls:
+            if url_data.get('lastmod'):
+                try:
+                    mod_date = datetime.fromisoformat(url_data['lastmod'].replace('Z', '+00:00'))
+                    if mod_date > cutoff_date:
+                        fresh_count += 1
+                except:
+                    pass
+
+    freshness_pct = (fresh_count / len(urls) * 100) if urls else 0
+
+    return {
+        'total_urls': len(urls),
+        'categorization': categorization,
+        'freshness': {
+            'fresh_count': fresh_count,
+            'freshness_percentage': round(freshness_pct, 1)
+        },
+        'sample_urls': urls[:20]  # First 20 for reference
+    }
+
+
+def find_social_profiles(domain):
+    """Find social media profiles for domain"""
+    print(f"\n[Social] Finding social profiles for {domain}...")
+
+    profiles = {}
+
+    # Try homepage
+    try:
+        response = requests.get(f"https://{domain}", timeout=15, headers={
+            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'
+        })
+
+        if response.status_code == 200:
+            soup = BeautifulSoup(response.content, 'html.parser')
+
+            # Social platform patterns
+            social_patterns = {
+                'facebook': ['facebook.com/', 'fb.com/'],
+                'instagram': ['instagram.com/'],
+                'twitter': ['twitter.com/', 'x.com/'],
+                'tiktok': ['tiktok.com/@'],
+                'youtube': ['youtube.com/', 'youtu.be/'],
+                'linkedin': ['linkedin.com/'],
+                'pinterest': ['pinterest.com/'],
+            }
+
+            # Find all links
+            for link in soup.find_all('a', href=True):
+                href = link['href']
+
+                for platform, patterns in social_patterns.items():
+                    if platform not in profiles:  # Only take first match
+                        if any(pattern in href for pattern in patterns):
+                            # Clean up URL
+                            if not href.startswith('http'):
+                                href = urljoin(f"https://{domain}", href)
+                            profiles[platform] = {
+                                'url': href,
+                                'found': True
+                            }
+
+            print(f"  Found {len(profiles)} social profiles")
+            for platform, data in profiles.items():
+                print(f"    ✓ {platform.title()}: {data['url']}")
+
+    except Exception as e:
+        print(f"  Error scraping {domain}: {e}")
+
+    # Mark missing platforms
+    all_platforms = ['facebook', 'instagram', 'twitter', 'tiktok', 'youtube', 'linkedin', 'pinterest']
+    for platform in all_platforms:
+        if platform not in profiles:
+            profiles[platform] = {'found': False, 'url': None}
+
+    return profiles
+
+
+def save_results():
+    """Save results to JSON file"""
+    output_file = f"analysis_data_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+    with open(output_file, 'w') as f:
+        json.dump(results, f, indent=2)
+    print(f"\n✓ Results saved to: {output_file}")
+    return output_file
+
+
+# Main execution
+if __name__ == "__main__":
+    print("="*60)
+    print("KEYWORD GAP ANALYSIS - DATA COLLECTION")
+    print(f"Target: {TARGET_DOMAIN}")
+    print(f"Competitors: {len(COMPETITORS)}")
+    print("="*60)
+
+    # 1. Analyze target sitemap
+    print("\n" + "="*60)
+    print("STEP 1: SITEMAP ANALYSIS")
+    print("="*60)
+    results['sitemap_analysis'][TARGET_DOMAIN] = fetch_sitemap(TARGET_DOMAIN)
+
+    # 2. Find social profiles
+    print("\n" + "="*60)
+    print("STEP 2: SOCIAL PROFILE DISCOVERY")
+    print("="*60)
+    results['social_profiles'][TARGET_DOMAIN] = find_social_profiles(TARGET_DOMAIN)
+
+    # Save intermediate results
+    print("\n" + "="*60)
+    print("SAVING INITIAL RESULTS")
+    print("="*60)
+    output_file = save_results()
+
+    print("\n" + "="*60)
+    print("INITIAL DATA COLLECTION COMPLETE")
+    print("="*60)
+    print(f"\nNext steps:")
+    print("1. Use DataForSEO API to collect domain metrics")
+    print("2. Use DataForSEO API to collect ranked keywords")
+    print("3. Perform keyword gap analysis")
+    print("4. Generate HTML report")
+    print(f"\nData saved to: {output_file}")
