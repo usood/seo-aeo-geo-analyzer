@@ -108,6 +108,7 @@ def show_menu():
         ("3", "GEO (JSON-LD) Analysis", "geo_analyzer.py", "~30 seconds"),
         ("4", "Performance Analysis", "performance_check.py", "~2-3 minutes"),
         ("5", "Generate HTML Report", "generate_report.py", "~5 seconds"),
+        ("6", "Export Data (CSV/Excel/PDF)", "export_data.py", "~10 seconds"),
         ("A", "Run ALL Steps (Complete Analysis)", "", "~25-35 minutes total"),
         ("Q", "Quit", "", "")
     ]
@@ -285,6 +286,9 @@ def main():
                     print_info("The report generator needs to be created from analyze_and_generate_report.py")
             else:
                 print_error("Prerequisites not met. Please run required steps first.")
+
+        elif choice == "6":
+            run_script("export_data.py", "Export Data to CSV/Excel/PDF")
 
         else:
             print_error("Invalid option. Please try again.")

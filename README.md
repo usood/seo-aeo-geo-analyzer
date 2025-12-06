@@ -14,6 +14,7 @@
 - **📝 Content Opportunities** - Categorized by intent (informational, transactional, commercial)
 - **📈 Actionable Roadmap** - 30/60/90-day implementation plan
 - **🎨 Beautiful HTML Reports** - Interactive, sortable data tables
+- **📤 Data Export** - Export analysis data to CSV, Excel, and PDF formats
 
 ## 🚀 Quick Start
 
@@ -90,6 +91,7 @@ Pre-configured examples for different business types:
 | `dataforseo_collection.py` | Keyword & SERP data | `dataforseo_final_*.json` | ~25min |
 | `geo_analyzer.py` | JSON-LD schema extraction | `geo_analysis.json` | ~30s |
 | `performance_check.py` | Core Web Vitals | `performance_analysis.json` | ~3min |
+| `export_data.py` | Data export (CSV/XLSX/PDF) | `exports/` | ~10s |
 
 ### Report Generation
 
@@ -192,6 +194,9 @@ python dataforseo_collection.py
 # Just performance check
 python performance_check.py
 
+# Export data to CSV/Excel/PDF
+python export_data.py
+
 # Generate report from existing data
 python generate_report.py
 ```
@@ -233,7 +238,7 @@ Built with:
 ## 🗺️ Roadmap
 
 - [ ] Multi-language support for reports
-- [ ] Export to CSV/Excel
+- [x] Export to CSV/Excel/PDF
 - [ ] Integration with Google Search Console
 - [ ] Automated scheduling (weekly/monthly reports)
 - [ ] Slack/Email notifications
