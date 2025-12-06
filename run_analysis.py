@@ -103,7 +103,7 @@ def show_menu():
     print(f"{Colors.BOLD}Available Analysis Steps:{Colors.ENDC}\n")
 
     steps = [
-        ("1", "Sitemap & Social Analysis", "collect_data_unleash.py", "~30 seconds"),
+        ("1", "Sitemap & Social Analysis", "collect_data.py", "~30 seconds"),
         ("2", "DataForSEO API Collection", "dataforseo_collection.py", "~20-30 minutes, ~$6.45"),
         ("3", "GEO (JSON-LD) Analysis", "geo_analyzer.py", "~30 seconds"),
         ("4", "Performance Analysis", "performance_check.py", "~2-3 minutes"),
@@ -155,7 +155,7 @@ def run_all_steps():
     print_header("RUNNING COMPLETE ANALYSIS WORKFLOW")
 
     steps = [
-        ("collect_data_unleash.py", "Sitemap & Social Analysis"),
+        ("collect_data.py", "Sitemap & Social Analysis"),
         ("dataforseo_collection.py", "DataForSEO API Collection (This will take 20-30 minutes)"),
         ("geo_analyzer.py", "GEO JSON-LD Analysis"),
         ("performance_check.py", "Performance Analysis"),
@@ -261,7 +261,7 @@ def main():
                 print_info("Cancelled.")
 
         elif choice == "1":
-            run_script("collect_data_unleash.py", "Sitemap & Social Analysis")
+            run_script("collect_data.py", "Sitemap & Social Analysis")
 
         elif choice == "2":
             confirm = input(f"\n{Colors.YELLOW}This will run DataForSEO API calls (~$6.45 cost). Continue? (y/N): {Colors.ENDC}").strip().lower()

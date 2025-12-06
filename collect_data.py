@@ -205,6 +205,7 @@ def find_social_profiles(domain):
                 'youtube': ['youtube.com/', 'youtu.be/'],
                 'linkedin': ['linkedin.com/'],
                 'pinterest': ['pinterest.com/'],
+                'reddit': ['reddit.com/user/', 'reddit.com/r/'],
             }
 
             # Find all links
@@ -230,7 +231,7 @@ def find_social_profiles(domain):
         print(f"  Error scraping {domain}: {e}")
 
     # Mark missing platforms
-    all_platforms = ['facebook', 'instagram', 'twitter', 'tiktok', 'youtube', 'linkedin', 'pinterest']
+    all_platforms = ['facebook', 'instagram', 'twitter', 'tiktok', 'youtube', 'linkedin', 'pinterest', 'reddit']
     for platform in all_platforms:
         if platform not in profiles:
             profiles[platform] = {'found': False, 'url': None}

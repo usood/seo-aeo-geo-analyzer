@@ -115,7 +115,12 @@ for gap in top_100_gaps:
         categorized_gaps['content_gaps'].append(gap)
 
     # Product gaps: transactional or product keywords
-    elif gap['intent'] == 'transactional' or any(word in keyword.lower() for word in ['buy', 'supplement', 'vitamin', 'product']):
+    elif gap['intent'] == 'transactional' or any(word in keyword.lower() for word in [
+        'buy', 'supplement', 'vitamin', 'product', 'price', 'cost', 'shop', 'store', 
+        'online', 'order', 'sale', 'offer', 'deal', 'discount', 'cheap', 'best', 
+        'review', 'dog food', 'cat food', 'pet food', 'treats', 'chews', 'shampoo', 
+        'oil', 'spray', 'powder', 'tablet', 'medicine'
+    ]):
         categorized_gaps['product_gaps'].append(gap)
 
     # Default to content gaps
@@ -756,6 +761,7 @@ social_platforms = {
     'youtube': {'name': 'YouTube', 'icon': '📹'},
     'linkedin': {'name': 'LinkedIn', 'icon': '💼'},
     'pinterest': {'name': 'Pinterest', 'icon': '📌'},
+    'reddit': {'name': 'Reddit', 'icon': '🤖'},
 }
 
 html += """
@@ -1008,7 +1014,7 @@ if geo_data:
 
                 <div class="insight-box">
                     <h3>What is GEO?</h3>
-                    <p><strong>Generative Engine Optimization</strong> ensures your content is optimized for AI tools like ChatGPT, Google SGE, and Perplexity. This involves structured data (JSON-LD schemas) that help AI understand and cite your content.</p>
+                    <p><strong>Generative Engine Optimization</strong> ensures your content is optimized for AI tools like ChatGPT, Google SGE, and Perplexity. This involves structured data (JSON-LD schemas) and content structure (AEO signals) that help AI understand and cite your content.</p>
                 </div>
 
                 <h3 style="margin: 30px 0 20px;">Current JSON-LD Schema Status</h3>
@@ -1018,21 +1024,27 @@ if geo_data:
     page_types = ['homepage', 'product', 'collection', 'blog']
     for page_type in page_types:
         if page_type in geo_data:
-            schemas = geo_data[page_type]
-            schema_types = []
-            for schema in schemas:
-                if isinstance(schema, dict):
-                    schema_type = schema.get('@type', 'Unknown')
-                    if isinstance(schema_type, list):
-                        schema_types.extend(schema_type)
-                    else:
-                        schema_types.append(schema_type)
-
+            data = geo_data[page_type]
+            if 'error' in data:
+                continue
+                
+            schemas = data.get('schemas', [])
+            aeo = data.get('aeo_signals', {})
+            
             page_name = page_type.title()
-            schema_count = len(schema_types)
+            
+            # Format schema list
+            schema_types = [s['type'] for s in schemas]
             schema_list = ', '.join(set(schema_types)) if schema_types else 'None found'
-
-            status = '✅ Good' if schema_count >= 2 else ('⚠️ Basic' if schema_count == 1 else '❌ Missing')
+            
+            # Determine status
+            issues_count = sum(len(s['issues']) for s in schemas)
+            if not schemas:
+                status = '❌ Missing'
+            elif issues_count > 0:
+                status = '⚠️ Issues'
+            else:
+                status = '✅ Good'
 
             html += f"""
                 <div class="stat-card" style="text-align: left; margin-bottom: 15px;">
@@ -1040,7 +1052,23 @@ if geo_data:
                         <div>
                             <div style="font-weight: 600; font-size: 1.1em; margin-bottom: 5px;">{page_name}</div>
                             <div style="font-size: 0.9em; color: var(--gray-600);">Schemas: {schema_list}</div>
-                        </div>
+"""
+            # Show specific issues
+            for s in schemas:
+                if s['issues']:
+                    html += f"""                            <div style="font-size: 0.85em; color: var(--danger); margin-top: 2px;">⚠️ {s['type']}: {', '.join(s['issues'])}</div>"""
+            
+            # Show AEO signals
+            if aeo:
+                aeo_text = []
+                if aeo.get('has_toc'): aeo_text.append("✅ TOC Found")
+                if aeo.get('short_paragraphs', 0) > 2: aeo_text.append("✅ Concise Answers")
+                if aeo.get('structure_depth', 0) >= 2: aeo_text.append("✅ Good Structure")
+                
+                if aeo_text:
+                    html += f"""                            <div style="font-size: 0.85em; color: var(--primary); margin-top: 5px;">🤖 AEO Signals: {', '.join(aeo_text)}</div>"""
+
+            html += f"""                        </div>
                         <div style="font-size: 1.5em;">{status}</div>
                     </div>
                 </div>
