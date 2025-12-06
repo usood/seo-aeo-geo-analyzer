@@ -636,14 +636,6 @@ html = f"""<!DOCTYPE html>
                 <span>Performance</span>
             </a>
         </div>
-
-        <div class="nav-section">
-            <div class="nav-section-title">Action Items</div>
-            <a href="#recommendations" class="nav-item" data-section="recommendations">
-                <span class="nav-icon">📋</span>
-                <span>Recommendations</span>
-            </a>
-        </div>
     </nav>
 
     <main class="main-content">
@@ -691,69 +683,7 @@ html = f"""<!DOCTYPE html>
                 </div>
 
 """
-# LLM Strategic Analysis Integration
-if llm_data:
-    brief = llm_data.get('content_brief', {}).get('brief', {})
-    audit = llm_data.get('page_audit', {}).get('analysis', {})
-    
-    # Handle potential text-only responses (if JSON parsing failed)
-    if 'text_response' in brief:
-        brief_content = f"<div style='font-size: 0.9em; white-space: pre-wrap;'>{brief['text_response'][:500]}...</div>"
-    else:
-        titles = brief.get('title_ideas', [])
-        angle = brief.get('unique_angle', 'Focus on user intent')
-        
-        title_html = ""
-        if titles:
-            title_html = f"""
-            <div style="margin-bottom: 10px;">
-                <strong style="color: var(--dark);">📝 Title Idea:</strong>
-                <div style="background: white; padding: 8px; border-radius: 6px; margin-top: 5px; font-size: 0.9em; border: 1px solid var(--neutral-200);">{titles[0]}</div>
-            </div>"""
-            
-        brief_content = f"""
-            <div style="margin-bottom: 15px;">
-                <strong style="color: var(--primary);">🎯 Strategy for '{llm_data.get('content_brief', {}).get('keyword', 'Target Keyword')}':</strong>
-                <p style="margin-top: 5px; font-size: 0.9em;">{angle}</p>
-            </div>
-            {title_html}
-        """
-
-    if 'text_response' in audit:
-        audit_recs = [audit['text_response'][:200]]
-    else:
-        audit_recs = audit.get('recommendations', ['Optimize content structure', 'Improve meta tags'])
-
-    audit_list = "".join([f"<li style='margin-bottom: 8px;'>{rec}</li>" for rec in audit_recs[:3]])
-
-    html += f"""
-                <!-- AI Strategic Insight -->
-                <div style="background: linear-gradient(135deg, #fef3c7 0%, #fffbeb 100%); border-radius: 16px; padding: 25px; margin-bottom: 50px; border: 1px solid rgba(245, 158, 11, 0.2);">
-                    <h3 style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px; color: var(--dark-light);">
-                        <span style="font-size: 1.2em;">🧠</span> AI Strategic Analysis
-                    </h3>
-                    
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
-                        <!-- Content Strategy -->
-                        <div>
-                            <h4 style="margin-bottom: 15px; color: var(--dark); font-size: 0.9em; text-transform: uppercase; letter-spacing: 1px;">Growth Strategy</h4>
-                            {brief_content}
-                        </div>
-                        
-                        <!-- Technical/On-Page Strategy -->
-                        <div>
-                            <h4 style="margin-bottom: 15px; color: var(--dark); font-size: 0.9em; text-transform: uppercase; letter-spacing: 1px;">Optimization Priorities</h4>
-                            <div style="background: rgba(255,255,255,0.6); padding: 15px; border-radius: 8px;">
-                                <div style="font-size: 0.85em; color: var(--gray-600); margin-bottom: 10px;">Audit for: <a href="{llm_data.get('page_audit', {}).get('url', '#')}" target="_blank" style="color: var(--primary);">Prioritized Page</a></div>
-                                <ul style="font-size: 0.9em; padding-left: 20px; color: var(--gray-800);">
-                                    {audit_list}
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-"""
-
+# LLM Strategic Analysis Integration (Moved to bottom of Exec Summary)
 html += f"""
                 <h3 style="margin-bottom: 20px; color: var(--dark);">Gap Distribution</h3>
                 <div class="stats-grid">
@@ -827,6 +757,158 @@ else:
     html += """<div style="padding: 20px; text-align: center; color: var(--gray-600); background: var(--gray-50); border-radius: 8px;">No urgent fixes detected via GSC.</div>"""
 
 html += """                            </div>
+                        </div>
+                    </div>
+                </div>
+
+"""
+# AI Strategic Analysis (New Location & Format)
+if llm_data and 'holistic_strategy' in llm_data:
+    strategy = llm_data['holistic_strategy']
+    
+    # Handle errors or text-only response
+    if 'error' in strategy:
+        strategy_content = f"<p style='color: var(--danger);'>{strategy['error']}</p>"
+    elif 'text_response' in strategy:
+        strategy_content = f"<div style='white-space: pre-wrap;'>{strategy['text_response'][:1000]}...</div>"
+    else:
+        # Pillars
+        pillars = strategy.get('pillars', {})
+        content_pillar = "".join([f"<li style='margin-bottom: 5px;'>{item}</li>" for item in pillars.get('content', [])])
+        tech_pillar = "".join([f"<li style='margin-bottom: 5px;'>{item}</li>" for item in pillars.get('technical', [])])
+        auth_pillar = "".join([f"<li style='margin-bottom: 5px;'>{item}</li>" for item in pillars.get('authority', [])])
+        
+        # Quick Wins
+        quick_wins = "".join([f"<span style='background: rgba(255,255,255,0.5); padding: 4px 8px; border-radius: 4px; font-size: 0.85em;'>⚡ {item}</span>" for item in strategy.get('quick_wins', [])])
+
+        strategy_content = f"""
+            <div style="margin-bottom: 25px;">
+                <h4 style="color: var(--primary-dark); margin-bottom: 10px; font-size: 1.1em;">Strategic Executive Summary</h4>
+                <p style="font-size: 1em; line-height: 1.6; color: var(--gray-800); background: rgba(255,255,255,0.5); padding: 15px; border-radius: 8px; border-left: 4px solid var(--primary);">
+                    {strategy.get('executive_summary', 'No summary available.')}
+                </p>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-bottom: 25px;">
+                <!-- Content Pillar -->
+                <div style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+                    <h5 style="color: var(--dark); margin-bottom: 15px; display: flex; align-items: center; gap: 8px;">
+                        <span style="font-size: 1.2em;">📝</span> Content
+                    </h5>
+                    <ul style="padding-left: 20px; font-size: 0.9em; color: var(--gray-700);">
+                        {content_pillar}
+                    </ul>
+                </div>
+
+                <!-- Technical Pillar -->
+                <div style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+                    <h5 style="color: var(--dark); margin-bottom: 15px; display: flex; align-items: center; gap: 8px;">
+                        <span style="font-size: 1.2em;">⚙️</span> Technical
+                    </h5>
+                    <ul style="padding-left: 20px; font-size: 0.9em; color: var(--gray-700);">
+                        {tech_pillar}
+                    </ul>
+                </div>
+
+                <!-- Authority Pillar -->
+                <div style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+                    <h5 style="color: var(--dark); margin-bottom: 15px; display: flex; align-items: center; gap: 8px;">
+                        <span style="font-size: 1.2em;">🔗</span> Authority
+                    </h5>
+                    <ul style="padding-left: 20px; font-size: 0.9em; color: var(--gray-700);">
+                        {auth_pillar}
+                    </ul>
+                </div>
+            </div>
+            
+            <div>
+                <h4 style="font-size: 0.9em; color: var(--gray-600); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px;">Quick Wins</h4>
+                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                    {quick_wins}
+                </div>
+            </div>
+        """
+
+    html += f"""
+                <div style="background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%); border-radius: 16px; padding: 30px; margin-top: 40px; border: 1px solid rgba(245, 158, 11, 0.3);">
+                    <h3 style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px; color: var(--dark);">
+                        <span style="font-size: 1.4em;">🧠</span> AI Strategic Roadmap
+                    </h3>
+                    {strategy_content}
+                </div>
+"""
+
+# Append Roadmap to Executive Summary (Merged Recommendations)
+html += f"""
+                <div style="margin-top: 50px; border-top: 1px solid var(--neutral-200); padding-top: 40px;">
+                    <h2 style="color: var(--dark); margin-bottom: 30px; font-size: 1.8em;">📋 Implementation Roadmap</h2>
+
+                    <h3 style="margin-bottom: 20px; font-size: 1.2em; color: var(--primary-dark);">30-Day Quick Wins</h3>
+                    <div class="stats-grid" style="grid-template-columns: 1fr; margin-bottom: 30px;">
+                        <div class="stat-card" style="text-align: left;">
+                            <h4 style="color: var(--primary); margin-bottom: 15px;">Week 1-2: Technical SEO Foundation</h4>
+                            <ul style="line-height: 2; color: var(--gray-700);">
+                                <li>✅ Add Product schema to all product pages</li>
+                                <li>✅ Implement Organization schema on homepage</li>
+                                <li>✅ Optimize top 5 product images (WebP, lazy loading)</li>
+                                <li>✅ Fix Core Web Vitals issues (target LCP < 2.5s)</li>
+                            </ul>
+                        </div>
+
+                        <div class="stat-card" style="text-align: left;">
+                            <h4 style="color: var(--primary); margin-bottom: 15px;">Week 3-4: Content Creation</h4>
+                            <ul style="line-height: 2; color: var(--gray-700);">
+                                <li>📝 Create blog posts for top 5 Quick Win keywords</li>
+                                <li>📝 Optimize existing product descriptions with target keywords</li>
+                                <li>📝 Add FAQ schema to product pages</li>
+                                <li>📝 Create collection pages for high-volume categories</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <h3 style="margin: 40px 0 20px; font-size: 1.2em; color: var(--primary-dark);">60-Day Growth Strategy</h3>
+                    <div class="stats-grid" style="grid-template-columns: 1fr; margin-bottom: 30px;">
+                        <div class="stat-card" style="text-align: left;">
+                            <h4 style="color: var(--primary); margin-bottom: 15px;">Content Expansion</h4>
+                            <ul style="line-height: 2; color: var(--gray-700);">
+                                <li>📖 Create {min(10, len(categorized_gaps['content_gaps']))} educational blog posts from Content Gaps</li>
+                                <li>📖 Develop comprehensive guides for top-performing keywords</li>
+                                <li>📖 Add Article schema to all blog posts</li>
+                                <li>📖 Internal linking strategy between blog posts and products</li>
+                            </ul>
+                        </div>
+
+                        <div class="stat-card" style="text-align: left;">
+                            <h4 style="color: var(--primary); margin-bottom: 15px;">Product Optimization</h4>
+                            <ul style="line-height: 2; color: var(--gray-700);">
+                                <li>🛒 Optimize {min(15, len(categorized_gaps['product_gaps']))} product pages for Product Gap keywords</li>
+                                <li>🛒 Add customer reviews with Review schema</li>
+                                <li>🛒 Create product comparison pages</li>
+                                <li>🛒 Implement breadcrumb navigation with schema</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <h3 style="margin: 40px 0 20px; font-size: 1.2em; color: var(--primary-dark);">90-Day Advanced Tactics</h3>
+                    <div class="stats-grid" style="grid-template-columns: 1fr; margin-bottom: 30px;">
+                        <div class="stat-card" style="text-align: left;">
+                            <h4 style="color: var(--primary); margin-bottom: 15px;">Link Building & Authority</h4>
+                            <ul style="line-height: 2; color: var(--gray-700);">
+                                <li>🔗 Guest post on pet wellness blogs (target: 5 quality backlinks)</li>
+                                <li>🔗 Partner with pet influencers for product reviews</li>
+                                <li>🔗 Submit to pet industry directories</li>
+                                <li>🔗 Create linkable assets (infographics, research data)</li>
+                            </ul>
+                        </div>
+
+                        <div class="stat-card" style="text-align: left;">
+                            <h4 style="color: var(--primary); margin-bottom: 15px;">Advanced GEO & AI Optimization</h4>
+                            <ul style="line-height: 2; color: var(--gray-700);">
+                                <li>🤖 Implement HowTo schema for care guides</li>
+                                <li>🤖 Add VideoObject schema for product videos</li>
+                                <li>🤖 Create comprehensive FAQ pages with FAQPage schema</li>
+                                <li>🤖 Monitor AI tool citations (ChatGPT, Perplexity)</li>
+                            </ul>
                         </div>
                     </div>
                 </div>
@@ -1598,8 +1680,9 @@ else:
             </section>
 """
 
-# Recommendations section
-html += f"""
+# Recommendations section (Merged into Executive Summary)
+if False:
+    html += f"""
             <!-- Recommendations & Action Items -->
             <section id="recommendations" class="section">
                 <h2 class="section-title"><span class="icon">📋</span> Action Items & Roadmap</h2>
