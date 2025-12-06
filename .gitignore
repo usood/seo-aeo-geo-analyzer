@@ -3,7 +3,8 @@
 # Environment and credentials
 .env
 .env.local
-config.yaml
+*.yaml
+!config.example.yaml
 client_secret.json
 token.json
 service_account.json
