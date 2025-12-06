@@ -63,6 +63,15 @@ else:
     google_data = None
     print("⚠ Google data not found. Run google_integration.py first.")
 
+# Load LLM Insights
+if os.path.exists("llm_insights.json"):
+    with open("llm_insights.json", 'r') as f:
+        llm_data = json.load(f)
+    print(f"✓ Loaded: llm_insights.json")
+else:
+    llm_data = None
+    print("⚠ LLM insights not found. Run llm_runner.py first.")
+
 # Load performance data
 if os.path.exists("performance_analysis.json"):
     with open("performance_analysis.json", 'r') as f:
@@ -681,6 +690,65 @@ html = f"""<!DOCTYPE html>
                     </div>
                 </div>
 
+"""
+# LLM Strategic Analysis Integration
+if llm_data:
+    brief = llm_data.get('content_brief', {}).get('brief', {})
+    audit = llm_data.get('page_audit', {}).get('analysis', {})
+    
+    # Handle potential text-only responses (if JSON parsing failed)
+    if 'text_response' in brief:
+        brief_content = f"<p>{brief['text_response'][:500]}...</p>"
+    else:
+        titles = brief.get('title_ideas', ['No titles generated'])
+        angle = brief.get('unique_angle', 'Focus on user intent')
+        brief_content = f"""
+            <div style="margin-bottom: 15px;">
+                <strong style="color: var(--primary);">🎯 Strategy for '{llm_data.get('content_brief', {}).get('keyword', 'Target Keyword')}':</strong>
+                <p style="margin-top: 5px; font-size: 0.9em;">{angle}</p>
+            </div>
+            <div style="margin-bottom: 10px;">
+                <strong style="color: var(--dark);">📝 Title Idea:</strong>
+                <div style="background: white; padding: 8px; border-radius: 6px; margin-top: 5px; font-size: 0.9em; border: 1px solid var(--neutral-200);">{titles[0]}</div>
+            </div>
+        """
+
+    if 'text_response' in audit:
+        audit_recs = [audit['text_response'][:200]]
+    else:
+        audit_recs = audit.get('recommendations', ['Optimize content structure', 'Improve meta tags'])
+
+    audit_list = "".join([f"<li style='margin-bottom: 8px;'>{rec}</li>" for rec in audit_recs[:3]])
+
+    html += f"""
+                <!-- AI Strategic Insight -->
+                <div style="background: linear-gradient(135deg, #fef3c7 0%, #fffbeb 100%); border-radius: 16px; padding: 25px; margin-bottom: 40px; border: 1px solid rgba(245, 158, 11, 0.2);">
+                    <h3 style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px; color: var(--dark-light);">
+                        <span style="font-size: 1.2em;">🧠</span> AI Strategic Analysis
+                    </h3>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+                        <!-- Content Strategy -->
+                        <div>
+                            <h4 style="margin-bottom: 15px; color: var(--dark); font-size: 0.9em; text-transform: uppercase; letter-spacing: 1px;">Growth Strategy</h4>
+                            {brief_content}
+                        </div>
+                        
+                        <!-- Technical/On-Page Strategy -->
+                        <div>
+                            <h4 style="margin-bottom: 15px; color: var(--dark); font-size: 0.9em; text-transform: uppercase; letter-spacing: 1px;">Optimization Priorities</h4>
+                            <div style="background: rgba(255,255,255,0.6); padding: 15px; border-radius: 8px;">
+                                <div style="font-size: 0.85em; color: var(--gray-600); margin-bottom: 10px;">Audit for: <a href="{llm_data.get('page_audit', {}).get('url', '#')}" target="_blank" style="color: var(--primary);">Prioritized Page</a></div>
+                                <ul style="font-size: 0.9em; padding-left: 20px; color: var(--gray-800);">
+                                    {audit_list}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+"""
+
+html += """
                 <h3 style="margin-bottom: 20px; color: var(--dark);">Gap Distribution</h3>
                 <div class="stats-grid">
                     <div class="stat-card">
