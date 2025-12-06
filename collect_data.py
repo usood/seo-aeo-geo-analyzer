@@ -35,6 +35,7 @@ results = {
     },
     "sitemap_analysis": {},
     "social_profiles": {},
+    "local_international": {},
     "domain_metrics": {},
     "ranked_keywords": {},
     "keyword_gaps": {}
@@ -239,6 +240,80 @@ def find_social_profiles(domain):
     return profiles
 
 
+def analyze_local_international_seo(domain):
+    """Analyze Local and International SEO signals"""
+    print(f"\n[Local/Intl] Analyzing Local & International SEO for {domain}...")
+    
+    data = {
+        'international': {
+            'hreflang_tags': [],
+            'content_language': None,
+            'has_intl_signals': False
+        },
+        'local': {
+            'phone_found': False,
+            'address_found': False,
+            'map_embed': False,
+            'has_local_signals': False
+        }
+    }
+    
+    try:
+        response = requests.get(f"https://{domain}", timeout=15, headers={
+            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'
+        })
+        
+        if response.status_code == 200:
+            soup = BeautifulSoup(response.content, 'html.parser')
+            
+            # --- International SEO ---
+            # Check hreflang
+            hreflangs = soup.find_all('link', rel='alternate', hreflang=True)
+            for tag in hreflangs:
+                data['international']['hreflang_tags'].append({
+                    'lang': tag.get('hreflang'),
+                    'url': tag.get('href')
+                })
+            
+            # Check content-language
+            meta_lang = soup.find('meta', attrs={'http-equiv': 'Content-Language'})
+            if meta_lang:
+                data['international']['content_language'] = meta_lang.get('content')
+                
+            if data['international']['hreflang_tags'] or data['international']['content_language']:
+                data['international']['has_intl_signals'] = True
+                
+            # --- Local SEO ---
+            text_content = soup.get_text().lower()
+            
+            # Simple phone check (heuristic)
+            import re
+            # Matches +91-..., +1-..., or standard 10-digit sequences with separators
+            phone_pattern = re.compile(r'(\+\d{1,3}[- ]?)?\(?\d{3}\)?[- ]?\d{3}[- ]?\d{4}')
+            if phone_pattern.search(text_content):
+                data['local']['phone_found'] = True
+                
+            # Simple address keywords check
+            address_keywords = ['street', 'road', 'avenue', 'lane', 'floor', 'building', 'pincode', 'zip code', 'suite']
+            if any(keyword in text_content for keyword in address_keywords):
+                data['local']['address_found'] = True
+                
+            # Check for map embed
+            if soup.find('iframe', src=re.compile(r'google\.com/maps')):
+                data['local']['map_embed'] = True
+                
+            if data['local']['phone_found'] or data['local']['address_found'] or data['local']['map_embed']:
+                data['local']['has_local_signals'] = True
+                
+            print(f"  International: Found {len(data['international']['hreflang_tags'])} hreflang tags")
+            print(f"  Local: Phone={'Yes' if data['local']['phone_found'] else 'No'}, Address={'Yes' if data['local']['address_found'] else 'No'}")
+            
+    except Exception as e:
+        print(f"  Error analyzing SEO signals: {e}")
+        
+    return data
+
+
 def save_results():
     """Save results to JSON file"""
     output_file = f"analysis_data_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
@@ -267,6 +342,12 @@ if __name__ == "__main__":
     print("STEP 2: SOCIAL PROFILE DISCOVERY")
     print("="*60)
     results['social_profiles'][TARGET_DOMAIN] = find_social_profiles(TARGET_DOMAIN)
+
+    # 3. Local & International Analysis
+    print("\n" + "="*60)
+    print("STEP 3: LOCAL & INTERNATIONAL SEO")
+    print("="*60)
+    results['local_international'][TARGET_DOMAIN] = analyze_local_international_seo(TARGET_DOMAIN)
 
     # Save intermediate results
     print("\n" + "="*60)

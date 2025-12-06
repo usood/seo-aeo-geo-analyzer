@@ -573,6 +573,10 @@ html = f"""<!DOCTYPE html>
                 <span class="nav-icon">📱</span>
                 <span>Social Presence</span>
             </a>
+            <a href="#local-intl" class="nav-item" data-section="local-intl">
+                <span class="nav-icon">🌍</span>
+                <span>Local & Intl SEO</span>
+            </a>
         </div>
 
         <div class="nav-section">
@@ -798,6 +802,82 @@ html += f"""                </div>
                     <h3>📊 Social Media Recommendation</h3>
                     <p><strong>Active Platforms:</strong> {active_count} of {len(social_platforms)}</p>
                     <p style="margin-top: 10px;">Social signals can indirectly impact SEO through brand awareness and traffic. Consider expanding presence on platforms where pet owners are active, especially Instagram and YouTube for visual content showcasing pet wellness products.</p>
+                </div>
+            </section>
+"""
+
+# Local & International SEO Section
+local_intl = sitemap_data.get('local_international', {}).get(TARGET_DOMAIN, {})
+intl_data = local_intl.get('international', {'hreflang_tags': [], 'has_intl_signals': False})
+local_data = local_intl.get('local', {'phone_found': False, 'address_found': False, 'has_local_signals': False})
+
+html += f"""
+            <!-- Local & International SEO -->
+            <section id="local-intl" class="section">
+                <h2 class="section-title"><span class="icon">🌍</span> Local & International SEO</h2>
+
+                <div class="stats-grid" style="grid-template-columns: 1fr 1fr;">
+                    <!-- International SEO -->
+                    <div class="stat-card" style="text-align: left;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                            <h3 style="font-size: 1.2em; margin: 0;">🌐 International SEO</h3>
+                            <span class="status-pill {'transactional' if intl_data['has_intl_signals'] else 'unknown'}">
+                                {'✅ Active' if intl_data['has_intl_signals'] else '⚪ Not Detected'}
+                            </span>
+                        </div>
+                        
+                        <div style="margin-bottom: 15px;">
+                            <strong>Hreflang Tags:</strong>
+                            <span style="color: var(--gray-600);">{len(intl_data['hreflang_tags'])} found</span>
+                        </div>
+"""
+if intl_data['hreflang_tags']:
+    html += """                        <div style="background: var(--gray-100); padding: 10px; border-radius: 8px; font-size: 0.85em; margin-bottom: 15px;">"""
+    for tag in intl_data['hreflang_tags'][:3]:
+        html += f"""<div>{tag['lang']}: {tag['url']}</div>"""
+    if len(intl_data['hreflang_tags']) > 3:
+        html += f"""<div>...and {len(intl_data['hreflang_tags']) - 3} more</div>"""
+    html += """</div>"""
+else:
+    html += """                        <p style="font-size: 0.9em; color: var(--gray-600); margin-bottom: 15px;">
+                            No hreflang tags found. If you target multiple countries or languages, use hreflang to tell Google which version to show.
+                        </p>
+"""
+html += f"""
+                        <div class="insight-box" style="margin-top: auto; margin-bottom: 0; padding: 15px;">
+                            <h4 style="font-size: 0.9em; margin-bottom: 5px;">Recommendation</h4>
+                            <p style="font-size: 0.85em;">{'Monitor hreflang for errors in Search Console.' if intl_data['has_intl_signals'] else 'If expanding globally, implement hreflang tags for each region/language variant.'}</p>
+                        </div>
+                    </div>
+
+                    <!-- Local SEO -->
+                    <div class="stat-card" style="text-align: left;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                            <h3 style="font-size: 1.2em; margin: 0;">📍 Local SEO</h3>
+                            <span class="status-pill {'transactional' if local_data['has_local_signals'] else 'unknown'}">
+                                {'✅ Active' if local_data['has_local_signals'] else '⚪ Basic'}
+                            </span>
+                        </div>
+
+                        <ul style="list-style: none; margin-bottom: 20px;">
+                            <li style="margin-bottom: 10px;">
+                                {'✅' if local_data['phone_found'] else '❌'} <strong>Phone Number</strong> 
+                                <span style="font-size: 0.85em; color: var(--gray-600);">(homepage)</span>
+                            </li>
+                            <li style="margin-bottom: 10px;">
+                                {'✅' if local_data['address_found'] else '❌'} <strong>Address/Location</strong> 
+                                <span style="font-size: 0.85em; color: var(--gray-600);">(homepage text)</span>
+                            </li>
+                            <li style="margin-bottom: 10px;">
+                                {'✅' if local_data.get('map_embed') else '❌'} <strong>Google Map Embed</strong>
+                            </li>
+                        </ul>
+
+                        <div class="insight-box" style="margin-top: auto; margin-bottom: 0; padding: 15px;">
+                            <h4 style="font-size: 0.9em; margin-bottom: 5px;">Recommendation</h4>
+                            <p style="font-size: 0.85em;">{'Ensure NAP (Name, Address, Phone) is consistent across all directories.' if local_data['has_local_signals'] else 'Add your physical address and phone number to the footer for better local ranking signals.'}</p>
+                        </div>
+                    </div>
                 </div>
             </section>
 """
