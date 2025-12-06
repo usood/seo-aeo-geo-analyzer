@@ -12,6 +12,12 @@ PyYAML>=6.0.1
 # Optional: For advanced features
 lxml>=4.9.0  # Faster XML parsing
 
+# Google Integrations
+google-api-python-client>=2.100.0
+google-auth>=2.23.0
+google-analytics-data>=0.18.0
+google-auth-oauthlib>=1.2.0
+
 # Testing
 pytest>=7.4.0
 pytest-cov>=4.1.0  # Coverage reporting

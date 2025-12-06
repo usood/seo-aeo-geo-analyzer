@@ -106,9 +106,10 @@ def show_menu():
         ("1", "Sitemap & Social Analysis", "collect_data.py", "~30 seconds"),
         ("2", "DataForSEO API Collection", "dataforseo_collection.py", "~20-30 minutes, ~$6.45"),
         ("3", "GEO (JSON-LD) Analysis", "geo_analyzer.py", "~30 seconds"),
-        ("4", "Performance Analysis", "performance_check.py", "~2-3 minutes"),
-        ("5", "Generate HTML Report", "generate_report.py", "~5 seconds"),
-        ("6", "Export Data (CSV/Excel/PDF)", "export_data.py", "~10 seconds"),
+        ("4", "Google Data (GSC & GA4)", "google_integration.py", "~10 seconds"),
+        ("5", "Performance Analysis", "performance_check.py", "~2-3 minutes"),
+        ("6", "Generate HTML Report", "generate_report.py", "~5 seconds"),
+        ("7", "Export Data (CSV/Excel/PDF)", "export_data.py", "~10 seconds"),
         ("A", "Run ALL Steps (Complete Analysis)", "", "~25-35 minutes total"),
         ("Q", "Quit", "", "")
     ]
@@ -126,7 +127,7 @@ def show_menu():
 
 def check_prerequisites(step):
     """Check if prerequisites for a step are met"""
-    if step == "5":  # Generate report needs data files
+    if step == "6":  # Generate report needs data files
         # Check for dataforseo data
         dataforseo_file = find_latest_file("dataforseo_final_*.json")
         if not dataforseo_file:
@@ -146,7 +147,7 @@ def check_prerequisites(step):
 
         # Check for performance data
         if not os.path.exists("performance_analysis.json"):
-            print_warning("Performance data not found. Run step 4 first.")
+            print_warning("Performance data not found. Run step 5 first.")
             return False
 
     return True
@@ -159,6 +160,7 @@ def run_all_steps():
         ("collect_data.py", "Sitemap & Social Analysis"),
         ("dataforseo_collection.py", "DataForSEO API Collection (This will take 20-30 minutes)"),
         ("geo_analyzer.py", "GEO JSON-LD Analysis"),
+        ("google_integration.py", "Google Data Integration"),
         ("performance_check.py", "Performance Analysis"),
         ("generate_report.py", "HTML Report Generation")
     ]
@@ -275,10 +277,13 @@ def main():
             run_script("geo_analyzer.py", "GEO JSON-LD Analysis")
 
         elif choice == "4":
-            run_script("performance_check.py", "Performance Analysis")
+            run_script("google_integration.py", "Google Data Integration")
 
         elif choice == "5":
-            if check_prerequisites("5"):
+            run_script("performance_check.py", "Performance Analysis")
+
+        elif choice == "6":
+            if check_prerequisites("6"):
                 if os.path.exists("generate_report.py"):
                     run_script("generate_report.py", "HTML Report Generation")
                 else:
@@ -287,7 +292,7 @@ def main():
             else:
                 print_error("Prerequisites not met. Please run required steps first.")
 
-        elif choice == "6":
+        elif choice == "7":
             run_script("export_data.py", "Export Data to CSV/Excel/PDF")
 
         else:

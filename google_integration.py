@@ -9,7 +9,9 @@ import os
 import json
 import datetime
 from dotenv import load_dotenv
-from google.oauth2 import service_account
+from google.oauth2.credentials import Credentials
+from google_auth_oauthlib.flow import InstalledAppFlow
+from google.auth.transport.requests import Request
 from googleapiclient.discovery import build
 from google.analytics.data_v1beta import BetaAnalyticsDataClient
 from google.analytics.data_v1beta.types import (
@@ -23,7 +25,8 @@ from google.analytics.data_v1beta.types import (
 load_dotenv()
 
 # Configuration
-SERVICE_ACCOUNT_FILE = 'service_account.json'
+CLIENT_SECRET_FILE = 'client_secret.json'
+TOKEN_FILE = 'token.json'
 SCOPES = ['https://www.googleapis.com/auth/webmasters.readonly', 'https://www.googleapis.com/auth/analytics.readonly']
 
 class GoogleIntegration:
@@ -47,18 +50,37 @@ class GoogleIntegration:
             'status': 'not_run',
             'date': datetime.datetime.now().isoformat()
         }
-        
-        # Check for service account file
-        if os.path.exists(SERVICE_ACCOUNT_FILE):
+        self.authenticate_user()
+
+    def authenticate_user(self):
+        """Authenticate user via OAuth 2.0"""
+        if os.path.exists(TOKEN_FILE):
             try:
-                self.creds = service_account.Credentials.from_service_account_file(
-                    SERVICE_ACCOUNT_FILE, scopes=SCOPES
-                )
-                print(f"✓ Loaded credentials from {SERVICE_ACCOUNT_FILE}")
-            except Exception as e:
-                print(f"⚠ Error loading credentials: {e}")
-        else:
-            print(f"⚠ {SERVICE_ACCOUNT_FILE} not found. Google integration will be skipped.")
+                self.creds = Credentials.from_authorized_user_file(TOKEN_FILE, SCOPES)
+            except Exception:
+                self.creds = None
+
+        if not self.creds or not self.creds.valid:
+            if self.creds and self.creds.expired and self.creds.refresh_token:
+                try:
+                    self.creds.refresh(Request())
+                except Exception:
+                    self.creds = None
+
+            if not self.creds:
+                if os.path.exists(CLIENT_SECRET_FILE):
+                    try:
+                        flow = InstalledAppFlow.from_client_secrets_file(CLIENT_SECRET_FILE, SCOPES)
+                        self.creds = flow.run_local_server(port=0)
+                        # Save credentials
+                        with open(TOKEN_FILE, 'w') as token:
+                            token.write(self.creds.to_json())
+                        print(f"✓ Authenticated and saved token to {TOKEN_FILE}")
+                    except Exception as e:
+                        print(f"⚠ Authentication failed: {e}")
+                else:
+                    print(f"⚠ {CLIENT_SECRET_FILE} not found. Please download OAuth 2.0 Client ID JSON from Google Cloud.")
+
 
     def init_gsc(self):
         """Initialize Search Console Service"""
@@ -97,24 +119,57 @@ class GoogleIntegration:
         end_date_prev = start_date_current - datetime.timedelta(days=1)
         start_date_prev = end_date_prev - datetime.timedelta(days=days)
 
-        def get_period_data(start, end):
+        def get_period_data(start, end, site_url_variant):
             try:
                 request = {
                     'startDate': start.isoformat(),
                     'endDate': end.isoformat(),
                     'dimensions': ['query', 'page'],
-                    'rowLimit': 1000 # Fetch more to analyze
+                    'rowLimit': 1000
                 }
                 response = self.gsc_service.searchanalytics().query(
-                    siteUrl=site_url, body=request
+                    siteUrl=site_url_variant, body=request
                 ).execute()
                 return response.get('rows', [])
             except Exception as e:
+                if '403' in str(e) or 'User does not have sufficient permission' in str(e):
+                    raise PermissionError(f"Permission denied for {site_url_variant}")
                 print(f"    ⚠ GSC Fetch Error ({start} to {end}): {e}")
                 return []
 
-        rows_current = get_period_data(start_date_current, end_date)
-        rows_prev = get_period_data(start_date_prev, end_date_prev)
+        # Try Domain Property first, then fallback to URL Prefix
+        site_variants = []
+        clean_domain = site_url.replace('https://', '').replace('http://', '').replace('sc-domain:', '').strip('/')
+        
+        # Variant 1: Domain Property (sc-domain:example.com)
+        site_variants.append(f"sc-domain:{clean_domain}")
+        
+        # Variant 2: URL Prefix (https://example.com/)
+        site_variants.append(f"https://{clean_domain}/")
+        
+        # Variant 3: URL Prefix without trailing slash
+        site_variants.append(f"https://{clean_domain}")
+            
+        rows_current = []
+        rows_prev = []
+        
+        active_url = None
+        
+        for variant in site_variants:
+            try:
+                print(f"    Trying property: {variant}...")
+                rows_current = get_period_data(start_date_current, end_date, variant)
+                rows_prev = get_period_data(start_date_prev, end_date_prev, variant)
+                active_url = variant
+                print(f"    ✓ Successfully connected to {variant}")
+                break
+            except PermissionError:
+                print(f"    ❌ Permission denied for {variant}. Trying next...")
+                continue
+        
+        if not active_url:
+            print("    ❌ Could not access any GSC property. Check your permissions in Search Console.")
+            return
 
         # --- Helper to aggregate data ---
         def aggregate_data(rows):
@@ -320,11 +375,11 @@ def main():
     gi = GoogleIntegration()
     
     if not gi.creds:
-        print("\n❌ No service account credentials found.")
-        print("1. Create a Service Account in Google Cloud Console.")
-        print("2. Download JSON key and save as 'service_account.json'.")
-        print("3. Share GSC property access with the service account email.")
-        print("4. Share GA4 property access with the service account email.")
+        print("\n❌ No valid credentials found.")
+        print("1. Go to Google Cloud Console > APIs & Services > Credentials.")
+        print("2. Create Credentials > OAuth 2.0 Client ID (Desktop App).")
+        print("3. Download JSON and save as 'client_secret.json' in this folder.")
+        print("4. Run this script again to login via browser.")
         return
 
     # Get config from env or use defaults
