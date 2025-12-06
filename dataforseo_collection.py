@@ -11,6 +11,7 @@ import time
 from datetime import datetime
 from dotenv import load_dotenv
 import os
+from utils.path_manager import get_current_project_path, get_latest_file
 
 # Load credentials
 load_dotenv()
@@ -21,16 +22,24 @@ if not DATAFORSEO_LOGIN or not DATAFORSEO_PASSWORD:
     print("ERROR: DataForSEO credentials not found in .env file")
     exit(1)
 
-# Configuration
-TARGET_DOMAIN = "unleashwellness.co"
-COMPETITORS = {
-    "k9vitality.in": "K9 Vitality",
-    "absolutpet.in": "Absolut Pet",
-    "dogseechew.in": "Dogsee Chew",
-    "furballstory.com": "Furball Story"
-}
-LOCATION = "India"
-LANGUAGE = "en"
+# Load configuration from previous step
+project_dir = get_current_project_path()
+analysis_file = get_latest_file("analysis_data_*.json", project_dir)
+
+if not analysis_file:
+    print(f"ERROR: No analysis_data file found in {project_dir}. Run collect_data.py first.")
+    exit(1)
+
+with open(analysis_file, 'r') as f:
+    analysis_data = json.load(f)
+    metadata = analysis_data.get('metadata', {})
+    TARGET_DOMAIN = metadata.get('target_domain')
+    COMPETITORS = metadata.get('competitors', {})
+    LOCATION = metadata.get('location', "India")
+    LANGUAGE = metadata.get('language', "en")
+
+print(f"Loaded config from {analysis_file}")
+print(f"Target: {TARGET_DOMAIN}")
 
 # API Configuration
 API_BASE = "https://api.dataforseo.com/v3"
@@ -300,7 +309,7 @@ def process_keyword_gaps():
 
 def save_progress(filename_suffix="progress"):
     """Save current results"""
-    filename = f"dataforseo_{filename_suffix}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+    filename = os.path.join(project_dir, f"dataforseo_{filename_suffix}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json")
     with open(filename, 'w') as f:
         json.dump(results, f, indent=2)
     print(f"\n✓ Saved to: {filename}")

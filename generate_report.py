@@ -10,25 +10,22 @@ import json
 import glob
 import os
 from datetime import datetime
-from collections import defaultdict
+from utils.path_manager import get_current_project_path, get_latest_file
+from utils.config_loader import load_config # Assuming config_loader is moved to utils
 
 # ============================================================================
 # LOAD DATA FILES
 # ============================================================================
 
-def find_latest_file(pattern):
-    """Find the most recently created file matching pattern"""
-    files = glob.glob(pattern)
-    if not files:
-        return None
-    return max(files, key=os.path.getctime)
-
 print("Loading data files...")
 
+project_dir = get_current_project_path()
+print(f"Loading data from project directory: {project_dir}")
+
 # Load sitemap data
-sitemap_file = find_latest_file("analysis_data_*.json")
+sitemap_file = get_latest_file("analysis_data_*.json", project_dir)
 if not sitemap_file:
-    print("ERROR: Sitemap data not found. Run collect_data_unleash.py first.")
+    print("ERROR: Sitemap data not found. Run collect_data.py first.")
     exit(1)
 
 with open(sitemap_file, 'r') as f:
@@ -36,47 +33,51 @@ with open(sitemap_file, 'r') as f:
 print(f"✓ Loaded: {sitemap_file}")
 
 # Load DataForSEO data
-dataforseo_file = find_latest_file("dataforseo_final_*.json")
+dataforseo_file = get_latest_file("dataforseo_final_*.json", project_dir)
 if not dataforseo_file:
     print("ERROR: DataForSEO data not found. Run dataforseo_collection.py first.")
     exit(1)
 
-with open(dataforseo_file, 'r') as f:
+with open(dataforforseo_file, 'r') as f:
     dataforseo_data = json.load(f)
 print(f"✓ Loaded: {dataforseo_file}")
 
 # Load GEO analysis
-if os.path.exists("geo_analysis.json"):
-    with open("geo_analysis.json", 'r') as f:
+geo_file = os.path.join(project_dir, "geo_analysis.json")
+if os.path.exists(geo_file):
+    with open(geo_file, 'r') as f:
         geo_data = json.load(f)
-    print(f"✓ Loaded: geo_analysis.json")
+    print(f"✓ Loaded: {geo_file}")
 else:
     geo_data = None
     print("⚠ GEO analysis not found. Run geo_analyzer.py first.")
 
 # Load Google Integration data
-if os.path.exists("google_data.json"):
-    with open("google_data.json", 'r') as f:
+google_file = os.path.join(project_dir, "google_data.json")
+if os.path.exists(google_file):
+    with open(google_file, 'r') as f:
         google_data = json.load(f)
-    print(f"✓ Loaded: google_data.json")
+    print(f"✓ Loaded: {google_file}")
 else:
     google_data = None
     print("⚠ Google data not found. Run google_integration.py first.")
 
 # Load LLM Insights
-if os.path.exists("llm_insights.json"):
-    with open("llm_insights.json", 'r') as f:
+llm_file = os.path.join(project_dir, "llm_insights.json")
+if os.path.exists(llm_file):
+    with open(llm_file, 'r') as f:
         llm_data = json.load(f)
-    print(f"✓ Loaded: llm_insights.json")
+    print(f"✓ Loaded: {llm_file}")
 else:
     llm_data = None
     print("⚠ LLM insights not found. Run llm_runner.py first.")
 
 # Load performance data
-if os.path.exists("performance_analysis.json"):
-    with open("performance_analysis.json", 'r') as f:
+perf_file = os.path.join(project_dir, "performance_analysis.json")
+if os.path.exists(perf_file):
+    with open(perf_file, 'r') as f:
         performance_data = json.load(f)
-    print(f"✓ Loaded: performance_analysis.json")
+    print(f"✓ Loaded: {perf_file}")
 else:
     performance_data = None
     print("⚠ Performance data not found. Run performance_check.py first.")
@@ -1887,7 +1888,8 @@ if False:
 # SAVE REPORT
 # ============================================================================
 
-report_filename = f"unleash-wellness-seo-audit-{datetime.now().strftime('%Y-%m-%d')}.html"
+safe_domain_name = TARGET_DOMAIN.replace('.', '-').replace('http://', '').replace('https://', '').strip('-')
+report_filename = os.path.join(project_dir, f"{safe_domain_name}-seo-audit-{datetime.now().strftime('%Y-%m-%d')}.html")
 with open(report_filename, 'w', encoding='utf-8') as f:
     f.write(html)
 

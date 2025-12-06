@@ -14,17 +14,43 @@ import json
 import time
 import os
 from dotenv import load_dotenv
+from utils.path_manager import get_current_project_path, get_latest_file
 
 load_dotenv()
 
 API_URL = "https://www.googleapis.com/pagespeedonline/v5/runPagespeed"
-API_KEY = os.getenv('PAGESPEED_API_KEY')  # Optional, but recommended
+API_KEY = os.getenv('PAGESPEED_API_KEY')
 
-pages = [
-    'https://unleashwellness.co/',
-    'https://unleashwellness.co/products/jolly-gut',
-    'https://unleashwellness.co/collections/all'
-]
+project_dir = get_current_project_path()
+analysis_file = get_latest_file("analysis_data_*.json", project_dir)
+
+pages = []
+
+if not analysis_file:
+    print(f"ERROR: No analysis_data file found in {project_dir}. Run collect_data.py first.")
+    exit(1)
+
+with open(analysis_file) as f:
+    data = json.load(f)
+    target_domain = data.get('metadata', {}).get('target_domain')
+    sitemap = data.get('sitemap_analysis', {}).get(target_domain, {})
+    
+    sample_urls = sitemap.get('sample_urls', [])
+    seen_types = set()
+    
+    # Add homepage
+    pages.append(f"https://{target_domain}/")
+    
+    for url_data in sample_urls:
+        u_type = url_data.get('type')
+        if u_type in ['product', 'category', 'content'] and u_type not in seen_types:
+            pages.append(url_data['url'])
+            seen_types.add(u_type)
+
+# Fail if no dynamic URLs
+if not pages:
+    print("ERROR: No dynamic URLs could be determined from analysis_data.json. Ensure sitemap analysis completed.")
+    exit(1)
 
 results = []
 
@@ -88,8 +114,9 @@ for url in pages:
         time.sleep(3)  # Rate limiting
 
 # Save
-with open('performance_analysis.json', 'w') as f:
+output_file = os.path.join(project_dir, 'performance_analysis.json')
+with open(output_file, 'w') as f:
     json.dump(results, f, indent=2)
 
 print(f"\n✓ Analyzed {len(pages)} pages")
-print(f"✓ Saved to performance_analysis.json")
+print(f"✓ Saved to {output_file}")

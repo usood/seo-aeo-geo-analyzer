@@ -10,43 +10,38 @@ import glob
 import os
 import pandas as pd
 from datetime import datetime
+from utils.path_manager import get_current_project_path, get_latest_file
 try:
     from fpdf import FPDF
     HAS_FPDF = True
 except ImportError:
     HAS_FPDF = False
 
-def find_latest_file(pattern):
-    """Find the most recently created file matching pattern"""
-    files = glob.glob(pattern)
-    if not files:
-        return None
-    return max(files, key=os.path.getctime)
-
 def load_data():
     """Load data from latest JSON files"""
     data = {}
+    project_dir = get_current_project_path()
     
     # Load Sitemap/Social data
-    sitemap_file = find_latest_file("analysis_data_*.json")
+    sitemap_file = get_latest_file("analysis_data_*.json", project_dir)
     if sitemap_file:
         with open(sitemap_file, 'r') as f:
             data['sitemap'] = json.load(f)
-            print(f"✓ Loaded {sitemap_file}")
+            print(f"✓ Loaded: {sitemap_file}")
             
     # Load DataForSEO data
-    dfs_file = find_latest_file("dataforseo_final_*.json")
+    dfs_file = get_latest_file("dataforseo_final_*.json", project_dir)
     if dfs_file:
         with open(dfs_file, 'r') as f:
             data['seo'] = json.load(f)
-            print(f"✓ Loaded {dfs_file}")
+            print(f"✓ Loaded: {dfs_file}")
             
     # Load Performance data
-    perf_file = "performance_analysis.json"
+    perf_file = os.path.join(project_dir, "performance_analysis.json")
     if os.path.exists(perf_file):
         with open(perf_file, 'r') as f:
             data['performance'] = json.load(f)
-            print(f"✓ Loaded {perf_file}")
+            print(f"✓ Loaded: {perf_file}")
             
     return data
 
@@ -104,14 +99,18 @@ def prepare_dfs(data):
 
 def export_to_csv(dfs, output_dir):
     """Export DataFrames to CSV"""
+    project_export_dir = os.path.join(get_current_project_path(), output_dir)
+    os.makedirs(project_export_dir, exist_ok=True)
     for name, df in dfs.items():
-        filename = f"{output_dir}/{name.lower().replace(' ', '_')}.csv"
+        filename = os.path.join(project_export_dir, f"{name.lower().replace(' ', '_')}.csv")
         df.to_csv(filename, index=False)
         print(f"✓ Exported CSV: {filename}")
 
 def export_to_excel(dfs, output_dir):
     """Export DataFrames to Excel"""
-    filename = f"{output_dir}/seo_analysis_data.xlsx"
+    project_export_dir = os.path.join(get_current_project_path(), output_dir)
+    os.makedirs(project_export_dir, exist_ok=True)
+    filename = os.path.join(project_export_dir, "seo_analysis_data.xlsx")
     try:
         with pd.ExcelWriter(filename, engine='openpyxl') as writer:
             for name, df in dfs.items():
@@ -120,8 +119,7 @@ def export_to_excel(dfs, output_dir):
     except Exception as e:
         print(f"⚠ Excel export failed: {e}")
 
-if HAS_FPDF:
-    class PDF(FPDF):
+class PDF(FPDF):
         def header(self):
             self.set_font('Arial', 'B', 15)
             self.cell(0, 10, 'SEO Analysis Data Export', 0, 1, 'C')
@@ -140,7 +138,9 @@ def export_to_pdf(dfs, output_dir):
         print("⚠ PDF export skipped: 'fpdf' library not installed.")
         return
 
-    filename = f"{output_dir}/seo_data_summary.pdf"
+    project_export_dir = os.path.join(get_current_project_path(), output_dir)
+    os.makedirs(project_export_dir, exist_ok=True)
+    filename = os.path.join(project_export_dir, "seo_data_summary.pdf")
     
     try:
         pdf = PDF()

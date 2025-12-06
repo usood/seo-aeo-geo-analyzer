@@ -9,6 +9,42 @@ import requests
 from bs4 import BeautifulSoup
 import json
 import re
+import os
+from utils.path_manager import get_current_project_path, get_latest_file
+
+# Load project context
+project_dir = get_current_project_path()
+analysis_file = get_latest_file("analysis_data_*.json", project_dir)
+
+test_urls = {}
+
+if not analysis_file:
+    print(f"ERROR: No analysis_data file found in {project_dir}. Run collect_data.py first.")
+    exit(1)
+
+with open(analysis_file) as f:
+    data = json.load(f)
+    target_domain = data.get('metadata', {}).get('target_domain')
+    sitemap = data.get('sitemap_analysis', {}).get(target_domain, {})
+    
+    # Find one URL of each type
+    sample_urls = sitemap.get('sample_urls', [])
+    if sample_urls:
+        test_urls['homepage'] = f"https://{target_domain}/"
+        
+        for url_data in sample_urls:
+            u_type = url_data.get('type')
+            if u_type == 'product' and 'product' not in test_urls:
+                test_urls['product'] = url_data['url']
+            elif u_type == 'content' and 'blog' not in test_urls:
+                test_urls['blog'] = url_data['url']
+            elif u_type == 'category' and 'collection' not in test_urls:
+                test_urls['collection'] = url_data['url']
+
+# Fail if no dynamic URLs
+if not test_urls:
+    print("ERROR: No dynamic URLs could be determined from analysis_data.json. Ensure sitemap analysis completed.")
+    exit(1)
 
 def extract_json_ld(soup, url):
     """Extract all JSON-LD from a page"""
@@ -120,21 +156,14 @@ def analyze_page(url, page_type):
         print(f"  Error: {e}")
         return {"error": str(e)}
 
-# Test URLs
-test_urls = {
-    'homepage': 'https://unleashwellness.co/',
-    'product': 'https://unleashwellness.co/products/jolly-gut',
-    'collection': 'https://unleashwellness.co/collections/all',
-    'blog': 'https://unleashwellness.co/blogs/pet-wellness'
-}
-
 results = {}
 for page_type, url in test_urls.items():
     results[page_type] = analyze_page(url, page_type)
 
 # Save
-with open('geo_analysis.json', 'w') as f:
+output_file = os.path.join(project_dir, 'geo_analysis.json')
+with open(output_file, 'w') as f:
     json.dump(results, f, indent=2)
 
 print(f"\n✓ Analyzed {len(test_urls)} pages")
-print(f"✓ Saved to geo_analysis.json")
+print(f"✓ Saved to {output_file}")

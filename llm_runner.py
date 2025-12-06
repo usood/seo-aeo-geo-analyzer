@@ -8,18 +8,40 @@ Date: December 6, 2025
 import json
 import os
 import glob
+import requests
 from llm_analyzer import LLMAnalyzer
 from datetime import datetime
+from utils.path_manager import get_current_project_path, get_latest_file
 
-def find_latest_file(pattern):
-    files = glob.glob(pattern)
-    if not files: return None
-    return max(files, key=os.path.getctime)
+def fetch_page_content(url):
+    """Fetch and clean text content from a URL"""
+    try:
+        headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)'}
+        response = requests.get(url, headers=headers, timeout=10)
+        if response.status_code == 200:
+            from bs4 import BeautifulSoup
+            soup = BeautifulSoup(response.content, 'html.parser')
+            
+            # Remove scripts and styles
+            for script in soup(["script", "style"]):
+                script.decompose()
+                
+            text = soup.get_text()
+            # Clean whitespace
+            lines = (line.strip() for line in text.splitlines())
+            chunks = (phrase.strip() for line in lines for phrase in line.split("  "))
+            text = '\n'.join(chunk for chunk in chunks if chunk)
+            return text
+    except Exception as e:
+        print(f"⚠ Failed to fetch {url}: {e}")
+    return None
 
 def main():
     print("="*60)
     print("LLM STRATEGIC ANALYSIS")
     print("="*60)
+    
+    import requests # Ensure requests is imported
     
     analyzer = LLMAnalyzer()
     if not analyzer.provider:
@@ -29,56 +51,56 @@ def main():
     print(f"✓ Using Provider: {analyzer.provider.title()}")
     
     # Load Data
-    gsc_file = "google_data.json"
-    dfs_file = find_latest_file("dataforseo_final_*.json")
+    project_dir = get_current_project_path()
+    gsc_file = os.path.join(project_dir, "google_data.json")
+    dfs_file = get_latest_file("dataforseo_final_*.json", project_dir)
     
     insights = {}
     
-    # 1. Analyze Top Keyword Opportunity (DataForSEO)
+    # 1. Aggregate Data for Holistic Analysis
+    context = {
+        'domain': '',
+        'top_keywords': [],
+        'declining_keywords': [],
+        'technical_summary': 'No data',
+        'content_summary': 'No data'
+    }
+
+    # Load DataForSEO (Keywords)
     if dfs_file:
         with open(dfs_file) as f:
             seo_data = json.load(f)
             top_gaps = seo_data.get('gaps', {}).get('top_100', [])
-            
-            # Find highest volume opportunity
-            high_value = next((g for g in top_gaps if g.get('search_volume', 0) > 1000), None)
-            
-            if high_value:
-                kw = high_value['keyword']
-                competitors = [high_value.get('competitor', 'competitors')]
-                print(f"\n🤖 Generating Content Brief for: '{kw}'...")
-                
-                brief = analyzer.generate_content_brief(kw, competitors)
-                insights['content_brief'] = {
-                    'keyword': kw,
-                    'brief': brief
-                }
-                print("✓ Brief Generated")
+            context['top_keywords'] = [g['keyword'] for g in top_gaps[:5]]
+            context['domain'] = seo_data.get('metadata', {}).get('target_domain') # Get domain from metadata
 
-    # 2. Analyze Page Optimization (GSC)
+    # Load GSC (Trends)
     if os.path.exists(gsc_file):
         with open(gsc_file) as f:
             gsc_data = json.load(f)
-            opt_targets = gsc_data.get('gsc', {}).get('optimization_needed', [])
+            trending_down = gsc_data.get('gsc', {}).get('trending_down', [])
+            context['declining_keywords'] = [t['keyword'] for t in trending_down[:5]]
             
+            opt_targets = gsc_data.get('gsc', {}).get('optimization_needed', [])
             if opt_targets:
-                target = opt_targets[0] # Analyze top target
-                url = target['url']
-                print(f"\n🤖 Analyzing Page for Optimization: {url}...")
-                
-                # Note: We aren't scraping the page content here to keep it simple, 
-                # but we could add a fetch_page_content() helper. 
-                # For now, we ask LLM to infer or browse if it has capability (Gemini often can)
-                rec = analyzer.analyze_page_content(url, "target keyword inferred")
-                insights['page_audit'] = {
-                    'url': url,
-                    'analysis': rec
-                }
-                print("✓ Audit Complete")
+                context['content_summary'] = f"Top page needing optimization: {opt_targets[0]['url']} (Reason: {opt_targets[0]['reason']})"
+
+    # Load Performance
+    perf_file = os.path.join(project_dir, "performance_analysis.json")
+    if os.path.exists(perf_file):
+        with open(perf_file) as f:
+            perf_data = json.load(f)
+            avg_score = sum(p.get('performance_score', 0) for p in perf_data) / len(perf_data) if perf_data else 0
+            context['technical_summary'] = f"Avg Mobile Performance Score: {avg_score:.1f}/100"
+
+    print("\n🤖 Generating Holistic SEO Strategy...")
+    strategy = analyzer.generate_holistic_strategy(context)
+    insights['holistic_strategy'] = strategy
+    print("✓ Strategy Generated")
 
     # Save Results
     if insights:
-        output_file = "llm_insights.json"
+        output_file = os.path.join(project_dir, "llm_insights.json")
         with open(output_file, 'w') as f:
             json.dump(insights, f, indent=2)
         print(f"\n✓ Saved insights to {output_file}")

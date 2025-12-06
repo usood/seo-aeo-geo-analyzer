@@ -14,15 +14,30 @@ import time
 from datetime import datetime
 
 # Configuration
-TARGET_DOMAIN = "unleashwellness.co"
-COMPETITORS = {
-    "k9vitality.in": "K9 Vitality",
-    "absolutpet.in": "Absolut Pet",
-    "dogseechew.in": "Dogsee Chew",
-    "furballstory.com": "Furball Story"
-}
-LOCATION = "India"
-LANGUAGE = "en"
+try:
+    import yaml
+    if os.path.exists('config.yaml'):
+        with open('config.yaml', 'r') as f:
+            config = yaml.safe_load(f)
+            TARGET_DOMAIN = config.get('target', {}).get('domain')
+            COMPETITORS = {c['domain']: c['name'] for c in config.get('competitors', [])}
+            LOCATION = config.get('location', {}).get('country', 'India')
+            LANGUAGE = config.get('location', {}).get('language_code', 'en')
+    else:
+        # Fallback to env or dummy for testing
+        TARGET_DOMAIN = os.getenv('TARGET_DOMAIN', 'example.com')
+        COMPETITORS = {}
+        LOCATION = "India"
+        LANGUAGE = "en"
+except ImportError:
+    print("⚠ PyYAML not installed. Using defaults.")
+    TARGET_DOMAIN = os.getenv('TARGET_DOMAIN', 'example.com')
+    COMPETITORS = {}
+    LOCATION = "India"
+    LANGUAGE = "en"
+
+if not TARGET_DOMAIN or TARGET_DOMAIN == 'example.com':
+    print("⚠ Warning: Using default/empty target domain. Configure config.yaml")
 
 # Results storage
 results = {
@@ -314,13 +329,31 @@ def analyze_local_international_seo(domain):
     return data
 
 
+def get_project_folder():
+    """Determine project folder based on domain"""
+    # Dynamic naming: example.com -> Example Com
+    project_name = TARGET_DOMAIN.replace('.', ' ').title()
+        
+    path = os.path.join("reports", project_name)
+    if not os.path.exists(path):
+        os.makedirs(path)
+    return path
+
 def save_results():
     """Save results to JSON file"""
-    output_file = f"analysis_data_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+    output_dir = get_project_folder()
+    output_file = os.path.join(output_dir, f"analysis_data_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json")
+    
     with open(output_file, 'w') as f:
         json.dump(results, f, indent=2)
     print(f"\n✓ Results saved to: {output_file}")
+    
+    # Save a 'latest' pointer for other scripts to find
+    with open('.latest_project', 'w') as f:
+        f.write(output_dir)
+        
     return output_file
+
 
 
 # Main execution

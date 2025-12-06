@@ -20,6 +20,7 @@ from google.analytics.data_v1beta.types import (
     Metric,
     RunReportRequest,
 )
+from utils.path_manager import get_current_project_path
 
 # Load environment variables
 load_dotenv()
@@ -361,7 +362,10 @@ class GoogleIntegration:
     def save_data(self):
         """Save data to JSON"""
         self.data['status'] = 'success'
-        filename = 'google_data.json'
+        
+        project_dir = get_current_project_path()
+        filename = os.path.join(project_dir, 'google_data.json')
+        
         with open(filename, 'w') as f:
             json.dump(self.data, f, indent=2)
         print(f"✓ Google data saved to {filename}")
@@ -384,7 +388,7 @@ def main():
 
     # Get config from env or use defaults
     # Ideally we load from config.yaml, but for standalone script we can use .env
-    target_domain = os.getenv('TARGET_DOMAIN', 'unleashwellness.co') 
+    target_domain = os.getenv('TARGET_DOMAIN') 
     ga4_property_id = os.getenv('GA4_PROPERTY_ID') # e.g. '123456789'
     
     # Try loading from config.yaml if available
@@ -400,6 +404,10 @@ def main():
     except ImportError:
         pass
         
+    if not target_domain:
+        print("❌ Target domain not configured. Set TARGET_DOMAIN in .env or config.yaml")
+        return
+
     print(f"\nTarget: {target_domain}")
     print(f"GA4 Property: {ga4_property_id or 'Not set'}")
     

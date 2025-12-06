@@ -4,6 +4,10 @@
 .env
 .env.local
 config.yaml
+client_secret.json
+token.json
+service_account.json
+.latest_project
 
 # Python
 __pycache__/
@@ -33,10 +37,12 @@ env/
 
 # Analysis outputs
 output/
-reports/*.html
-reports/*.json
-reports/*.csv
+reports/
 !reports/.gitkeep
+exports/
+google_data.json
+llm_insights.json
+*.html
 
 # DataForSEO API results
 dataforseo_*.json
