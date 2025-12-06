@@ -8,3 +8,7 @@ PyYAML>=6.0.1
 
 # Optional: For advanced features
 lxml>=4.9.0  # Faster XML parsing
+
+# Testing
+pytest>=7.4.0
+pytest-cov>=4.1.0  # Coverage reporting

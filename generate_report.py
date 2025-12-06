@@ -96,8 +96,9 @@ for gap in top_100_gaps:
     intent_data = keyword_intent.get(keyword, {})
 
     # Add enrichment to gap
-    gap['difficulty'] = enrichment.get('keyword_info', {}).get('competition', 0) * 100 if enrichment else None
-    gap['cpc'] = enrichment.get('keyword_info', {}).get('cpc', 0) if enrichment else 0
+    competition = enrichment.get('keyword_info', {}).get('competition') if enrichment else None
+    gap['difficulty'] = competition * 100 if competition is not None else 0
+    gap['cpc'] = enrichment.get('keyword_info', {}).get('cpc') or 0
     gap['intent'] = intent_data.get('primary_intent', {}).get('intent', 'unknown') if intent_data else 'unknown'
 
     # Categorize

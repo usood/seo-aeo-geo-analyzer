@@ -1,6 +1,6 @@
-# SEO Gap Analyzer 🔍
+# SEO/AEO/GEO Analyzer 🔍
 
-> Comprehensive SEO competitive analysis tool for D2C, B2B, and B2C brands. Identifies keyword opportunities, analyzes technical SEO, and provides actionable recommendations.
+> Comprehensive SEO, AEO (Answer Engine Optimization), and GEO (Generative Engine Optimization) competitive analysis tool for D2C, B2B, and B2C brands. Identifies keyword opportunities, optimizes for AI search engines, and provides actionable recommendations.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
@@ -107,18 +107,20 @@ Pre-configured examples for different business types:
 
 Uses [DataForSEO](https://dataforseo.com/) API (affordable SEO data):
 
-| Call Type | Quantity | Cost per Call | Total |
-|-----------|----------|---------------|-------|
-| Domain Metrics | 5 | $0.05 | $0.25 |
-| Ranked Keywords | 5 | $0.50 | $2.50 |
-| Keyword Enrichment | 1 | $0.50 | $0.50 |
-| Search Intent | 1 | $0.20 | $0.20 |
-| SERP Analysis | 3 | $0.50 | $1.50 |
-| Backlinks | 1 | $0.50 | $0.50 |
-| Keyword Ideas | 1 | $0.50 | $0.50 |
-| **TOTAL** | **17** | | **$6.45** |
+| Call Type | Quantity | Estimated Cost | Actual Cost* |
+|-----------|----------|----------------|--------------|
+| Domain Metrics | 5 | $0.25 | ~$0.05 |
+| Ranked Keywords | 5 | $2.50 | ~$0.10 |
+| Keyword Enrichment | 1 | $0.50 | ~$0.03 |
+| Search Intent | 1 | $0.20 | ~$0.02 |
+| SERP Analysis | 3 | $1.50 | ~$0.02 |
+| Backlinks | 1 | $0.50 | ~$0.01 |
+| Keyword Ideas | 1 | $0.50 | ~$0.01 |
+| **TOTAL** | **17** | **$6.45** | **~$0.24** |
 
-*PageSpeed Insights API is free from Google.*
+\* *Actual costs are significantly lower than list prices due to DataForSEO's on-demand pricing model. Your actual cost may vary based on data volume returned.*
+
+**PageSpeed Insights API** is free from Google (requires API key: set `PAGESPEED_API_KEY` in `.env`).
 
 ## 📊 Report Sections
 
