@@ -698,19 +698,25 @@ if llm_data:
     
     # Handle potential text-only responses (if JSON parsing failed)
     if 'text_response' in brief:
-        brief_content = f"<p>{brief['text_response'][:500]}...</p>"
+        brief_content = f"<div style='font-size: 0.9em; white-space: pre-wrap;'>{brief['text_response'][:500]}...</div>"
     else:
-        titles = brief.get('title_ideas', ['No titles generated'])
+        titles = brief.get('title_ideas', [])
         angle = brief.get('unique_angle', 'Focus on user intent')
+        
+        title_html = ""
+        if titles:
+            title_html = f"""
+            <div style="margin-bottom: 10px;">
+                <strong style="color: var(--dark);">📝 Title Idea:</strong>
+                <div style="background: white; padding: 8px; border-radius: 6px; margin-top: 5px; font-size: 0.9em; border: 1px solid var(--neutral-200);">{titles[0]}</div>
+            </div>"""
+            
         brief_content = f"""
             <div style="margin-bottom: 15px;">
                 <strong style="color: var(--primary);">🎯 Strategy for '{llm_data.get('content_brief', {}).get('keyword', 'Target Keyword')}':</strong>
                 <p style="margin-top: 5px; font-size: 0.9em;">{angle}</p>
             </div>
-            <div style="margin-bottom: 10px;">
-                <strong style="color: var(--dark);">📝 Title Idea:</strong>
-                <div style="background: white; padding: 8px; border-radius: 6px; margin-top: 5px; font-size: 0.9em; border: 1px solid var(--neutral-200);">{titles[0]}</div>
-            </div>
+            {title_html}
         """
 
     if 'text_response' in audit:
@@ -722,7 +728,7 @@ if llm_data:
 
     html += f"""
                 <!-- AI Strategic Insight -->
-                <div style="background: linear-gradient(135deg, #fef3c7 0%, #fffbeb 100%); border-radius: 16px; padding: 25px; margin-bottom: 40px; border: 1px solid rgba(245, 158, 11, 0.2);">
+                <div style="background: linear-gradient(135deg, #fef3c7 0%, #fffbeb 100%); border-radius: 16px; padding: 25px; margin-bottom: 50px; border: 1px solid rgba(245, 158, 11, 0.2);">
                     <h3 style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px; color: var(--dark-light);">
                         <span style="font-size: 1.2em;">🧠</span> AI Strategic Analysis
                     </h3>
@@ -748,7 +754,7 @@ if llm_data:
                 </div>
 """
 
-html += """
+html += f"""
                 <h3 style="margin-bottom: 20px; color: var(--dark);">Gap Distribution</h3>
                 <div class="stats-grid">
                     <div class="stat-card">
@@ -783,11 +789,11 @@ html += """
 """
 for kw in categorized_gaps['high_opportunity'][:5]:
     html += f"""                                <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: var(--gray-50); border-radius: 8px; border-left: 4px solid var(--primary);">
-                                    <div>
-                                        <div style="font-weight: 600;">{kw['keyword']}</div>
+                                    <div style="min-width: 0;">
+                                        <div style="font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{kw['keyword']}</div>
                                         <div style="font-size: 0.8em; color: var(--gray-600);">{kw['search_volume']:,}/mo • Diff: {int(kw.get('difficulty', 0))}</div>
                                     </div>
-                                    <span class="status-pill {kw['intent']}">{kw['intent'].title()}</span>
+                                    <span class="status-pill {kw['intent']}" style="margin-left: 10px;">{kw['intent'].title()}</span>
                                 </div>"""
 html += """                            </div>
                         </div>
@@ -809,13 +815,13 @@ if google_data and google_data.get('gsc', {}).get('optimization_needed'):
         else:
             advice = "🔍 Review User Intent"
             
-        html += f"""                                <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: #fef2f2; border-radius: 8px; border-left: 4px solid var(--danger);">
-                                    <div style="overflow: hidden;">
-                                        <div style="font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="{p['url']}">/{url_path}</div>
+        html += f"""                                <div style="display: flex; justify-content: space-between; align-items: flex-start; padding: 12px; background: #fef2f2; border-radius: 8px; border-left: 4px solid var(--danger);">
+                                    <div style="flex: 1; min-width: 0; margin-right: 15px;">
+                                        <div style="font-weight: 600; word-break: break-all; line-height: 1.3; margin-bottom: 4px; color: var(--dark);" title="{p['url']}">/{url_path}</div>
                                         <div style="font-size: 0.8em; color: var(--gray-600); margin-bottom: 2px;">{p['reason']}</div>
                                         <div style="font-size: 0.75em; color: var(--dark); font-weight: 600;">{advice}</div>
                                     </div>
-                                    <span style="font-size: 0.8em; font-weight: 600; color: var(--danger);">{p['metric']}</span>
+                                    <span style="font-size: 0.8em; font-weight: 600; color: var(--danger); white-space: nowrap; margin-top: 2px;">{p['metric']}</span>
                                 </div>"""
 else:
     html += """<div style="padding: 20px; text-align: center; color: var(--gray-600); background: var(--gray-50); border-radius: 8px;">No urgent fixes detected via GSC.</div>"""
