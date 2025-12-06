@@ -54,6 +54,15 @@ else:
     geo_data = None
     print("⚠ GEO analysis not found. Run geo_analyzer.py first.")
 
+# Load Google Integration data
+if os.path.exists("google_data.json"):
+    with open("google_data.json", 'r') as f:
+        google_data = json.load(f)
+    print(f"✓ Loaded: google_data.json")
+else:
+    google_data = None
+    print("⚠ Google data not found. Run google_integration.py first.")
+
 # Load performance data
 if os.path.exists("performance_analysis.json"):
     with open("performance_analysis.json", 'r') as f:
@@ -608,6 +617,10 @@ html = f"""<!DOCTYPE html>
             <a href="#geo" class="nav-item" data-section="geo">
                 <span class="nav-icon">🤖</span>
                 <span>GEO (AI Visibility)</span>
+            </a>
+            <a href="#google-data" class="nav-item" data-section="google-data">
+                <span class="nav-icon">📈</span>
+                <span>Google Search & GA4</span>
             </a>
             <a href="#performance" class="nav-item" data-section="performance">
                 <span class="nav-icon">⚡</span>
@@ -1218,18 +1231,153 @@ if geo_data:
                 </div>
             </section>
 """
+
+# Google Data Section
+if google_data and google_data.get('status') == 'success':
+    gsc = google_data.get('gsc', {})
+    ga4 = google_data.get('ga4', {})
+    
+    html += f"""
+            <!-- Google Data -->
+            <section id="google-data" class="section">
+                <h2 class="section-title"><span class="icon">📈</span> Google Search & Analytics</h2>
+                
+                <!-- Growth Summary -->
+                <div class="insight-box">
+                    <h3>📊 90-Day Growth Summary</h3>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 15px;">
+                        <div>
+                            <div style="font-size: 0.9em; color: var(--gray-600);">Total Clicks</div>
+                            <div style="font-size: 1.8em; font-weight: 700; color: var(--dark);">{gsc['totals']['clicks']:,}</div>
+                            <div style="font-size: 0.9em; color: {'var(--success)' if gsc['totals']['clicks_growth'] >= 0 else 'var(--danger)'}; font-weight: 600;">
+                                {'+' if gsc['totals']['clicks_growth'] >= 0 else ''}{gsc['totals']['clicks_growth']}% vs prev 90d
+                            </div>
+                        </div>
+                        <div>
+                            <div style="font-size: 0.9em; color: var(--gray-600);">Total Impressions</div>
+                            <div style="font-size: 1.8em; font-weight: 700; color: var(--dark);">{gsc['totals']['impressions']:,}</div>
+                            <div style="font-size: 0.9em; color: {'var(--success)' if gsc['totals']['impressions_growth'] >= 0 else 'var(--danger)'}; font-weight: 600;">
+                                {'+' if gsc['totals']['impressions_growth'] >= 0 else ''}{gsc['totals']['impressions_growth']}% vs prev 90d
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-number">{ga4.get('sessions', 0):,}</div>
+                        <div class="stat-label">Organic Sessions (30d)</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">{ga4.get('engagement_rate', 0)}%</div>
+                        <div class="stat-label">Engagement Rate</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">{len(gsc.get('trending_up', []))}</div>
+                        <div class="stat-label">Keywords Trending Up</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">{len(gsc.get('optimization_needed', []))}</div>
+                        <div class="stat-label">Optimization Targets</div>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-top: 30px;">
+                    <!-- Trending Up -->
+                    <div>
+                        <h3 style="margin-bottom: 15px; color: var(--success);">🚀 Trending Up (Last 90d)</h3>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Keyword</th>
+                                    <th>Click Growth</th>
+                                    <th>Pos Change</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+"""
+    if gsc.get('trending_up'):
+        for q in gsc.get('trending_up', []):
+            html += f"""                                <tr>
+                                    <td><strong>{q['keyword']}</strong></td>
+                                    <td style="color: var(--success);">+{q['click_change']}</td>
+                                    <td style="color: var(--success);">+{q['position_change']}</td>
+                                </tr>"""
+    else:
+        html += """<tr><td colspan="3" style="text-align:center; color: var(--gray-600);">No significant uptrends detected</td></tr>"""
+
+    html += """                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Optimization Needed -->
+                    <div>
+                        <h3 style="margin-bottom: 15px; color: var(--warning);">🛠️ Optimization Opportunities</h3>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Page</th>
+                                    <th>Issue</th>
+                                    <th>Metric</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+"""
+    if gsc.get('optimization_needed'):
+        for p in gsc.get('optimization_needed', []):
+            url_path = p['url'].replace('https://', '').replace('http://', '').split('/', 1)[-1]
+            if not url_path: url_path = '/'
+            html += f"""                                <tr>
+                                    <td title="{p['url']}">/{url_path[:30]}...</td>
+                                    <td>{p['reason']}</td>
+                                    <td>{p['metric']}</td>
+                                </tr>"""
+    else:
+        html += """<tr><td colspan="3" style="text-align:center; color: var(--gray-600);">No urgent optimization targets found</td></tr>"""
+
+    html += """                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 30px;">
+                    <h3 style="margin-bottom: 15px;">🏆 Top Ranking Queries</h3>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Query</th>
+                                <th>Clicks</th>
+                                <th>Impressions</th>
+                                <th>Pos</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+"""
+    for q in gsc.get('top_queries', []):
+        html += f"""                            <tr>
+                                <td><strong>{q['keyword']}</strong></td>
+                                <td>{q['clicks']}</td>
+                                <td>{q['impressions']}</td>
+                                <td>{q['position']:.1f}</td>
+                            </tr>"""
+    html += """                        </tbody>
+                    </table>
+                </div>
+            </section>
+"""
 else:
     html += """
-            <section id="geo" class="section">
-                <h2 class="section-title"><span class="icon">🤖</span> GEO - AI Visibility Optimization</h2>
+            <section id="google-data" class="section">
+                <h2 class="section-title"><span class="icon">📈</span> Google Search & Analytics</h2>
                 <div class="insight-box">
-                    <h3>⚠️ GEO Data Not Available</h3>
-                    <p>Run geo_analyzer.py to analyze JSON-LD schemas on your site.</p>
+                    <h3>⚠️ Data Not Available</h3>
+                    <p>Run <strong>google_integration.py</strong> with a valid service account to see real search performance data.</p>
                 </div>
             </section>
 """
 
-# Performance Section
+html += """
+            <!-- Performance Analysis -->
 if performance_data and len(performance_data) > 0:
     html += """
             <!-- Performance Analysis -->
