@@ -700,6 +700,62 @@ html = f"""<!DOCTYPE html>
                         <div class="stat-label">Product/Transactional Gaps</div>
                     </div>
                 </div>
+
+                <!-- Focused Action Plan -->
+                <div style="background: white; border-radius: 16px; padding: 30px; margin-top: 40px; box-shadow: 0 4px 20px rgba(0,0,0,0.08);">
+                    <h3 style="display: flex; align-items: center; gap: 10px; margin-bottom: 25px; font-size: 1.4em;">
+                        <span style="font-size: 1.2em;">🚀</span> Focused Action Plan
+                    </h3>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+                        <!-- Top 5 Keywords -->
+                        <div>
+                            <h4 style="margin-bottom: 15px; color: var(--primary); text-transform: uppercase; font-size: 0.85em; letter-spacing: 1px;">Top 5 Keywords to Target</h4>
+                            <div style="display: flex; flex-direction: column; gap: 10px;">
+"""
+for kw in categorized_gaps['high_opportunity'][:5]:
+    html += f"""                                <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: var(--gray-50); border-radius: 8px; border-left: 4px solid var(--primary);">
+                                    <div>
+                                        <div style="font-weight: 600;">{kw['keyword']}</div>
+                                        <div style="font-size: 0.8em; color: var(--gray-600);">{kw['search_volume']:,}/mo • Diff: {int(kw.get('difficulty', 0))}</div>
+                                    </div>
+                                    <span class="status-pill {kw['intent']}">{kw['intent'].title()}</span>
+                                </div>"""
+html += """                            </div>
+                        </div>
+
+                        <!-- Top 5 Page Fixes -->
+                        <div>
+                            <h4 style="margin-bottom: 15px; color: var(--danger); text-transform: uppercase; font-size: 0.85em; letter-spacing: 1px;">Top 5 Pages to Fix</h4>
+                            <div style="display: flex; flex-direction: column; gap: 10px;">
+"""
+if google_data and google_data.get('gsc', {}).get('optimization_needed'):
+    for p in google_data['gsc']['optimization_needed'][:5]:
+        url_path = p['url'].replace('https://', '').replace('http://', '').split('/', 1)[-1]
+        
+        # Determine advice
+        if 'CTR' in p['reason']:
+            advice = "✍️ Rewrite Title/Meta & Add Schema"
+        elif 'Striking' in p['reason']:
+            advice = "🔗 Add Internal Links & Expand Content"
+        else:
+            advice = "🔍 Review User Intent"
+            
+        html += f"""                                <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: #fef2f2; border-radius: 8px; border-left: 4px solid var(--danger);">
+                                    <div style="overflow: hidden;">
+                                        <div style="font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="{p['url']}">/{url_path}</div>
+                                        <div style="font-size: 0.8em; color: var(--gray-600); margin-bottom: 2px;">{p['reason']}</div>
+                                        <div style="font-size: 0.75em; color: var(--dark); font-weight: 600;">{advice}</div>
+                                    </div>
+                                    <span style="font-size: 0.8em; font-weight: 600; color: var(--danger);">{p['metric']}</span>
+                                </div>"""
+else:
+    html += """<div style="padding: 20px; text-align: center; color: var(--gray-600); background: var(--gray-50); border-radius: 8px;">No urgent fixes detected via GSC.</div>"""
+
+html += """                            </div>
+                        </div>
+                    </div>
+                </div>
             </section>
 """
 
@@ -1371,13 +1427,12 @@ else:
                 <h2 class="section-title"><span class="icon">📈</span> Google Search & Analytics</h2>
                 <div class="insight-box">
                     <h3>⚠️ Data Not Available</h3>
-                    <p>Run <strong>google_integration.py</strong> with a valid service account to see real search performance data.</p>
+                    <p>Run <strong>google_integration.py</strong> with a valid account to see real search performance data.</p>
                 </div>
             </section>
 """
 
-html += """
-            <!-- Performance Analysis -->
+# Performance Section
 if performance_data and len(performance_data) > 0:
     html += """
             <!-- Performance Analysis -->
