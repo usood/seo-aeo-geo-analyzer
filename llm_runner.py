@@ -9,7 +9,7 @@ import json
 import os
 import glob
 import requests
-from llm_analyzer import LLMAnalyzer
+from utils.llm_analyzer import LLMAnalyzer
 from datetime import datetime
 from utils.path_manager import get_current_project_path, get_latest_file
 

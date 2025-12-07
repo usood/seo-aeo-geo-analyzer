@@ -82,6 +82,14 @@ class GoogleIntegration:
                 else:
                     print(f"⚠ {CLIENT_SECRET_FILE} not found. Please download OAuth 2.0 Client ID JSON from Google Cloud.")
 
+        # Print authenticated email for debugging permissions
+        if self.creds:
+             try:
+                 # Simple way to get email from service object not directly available in creds usually
+                 # unless we decode id_token, but for now just reminding user is helpful
+                 print("  ℹ Authenticated. Please ensure this account has access to the GSC/GA4 properties.")
+             except:
+                 pass
 
     def init_gsc(self):
         """Initialize Search Console Service"""
@@ -299,6 +307,7 @@ class GoogleIntegration:
             print("    ⚠ No GA4 Property ID provided.")
             return
 
+        property_id = str(property_id).strip()
         print(f"  Fetching GA4 data for property {property_id}...")
         
         try:
@@ -357,7 +366,7 @@ class GoogleIntegration:
             
         except Exception as e:
             print(f"    ⚠ GA4 Error: {e}")
-            print(f"    (Make sure service account has access to property {property_id})")
+            print(f"    (Make sure your authenticated account has 'Viewer' access to property {property_id})")
 
     def save_data(self):
         """Save data to JSON"""

@@ -127,8 +127,10 @@ def get_ranked_keywords(domain, limit=100):
 
     data = make_api_call("dataforseo_labs/google/ranked_keywords/live", payload)
 
-    if data and data['tasks'][0]['result']:
+    if data and data['tasks'] and data['tasks'][0]['result']:
         items = data['tasks'][0]['result'][0].get('items', [])
+        if items is None:
+            items = []
         print(f"  ✓ Found {len(items)} keywords")
         results['metadata']['total_cost'] += data['tasks'][0].get('cost', 0)
         return items
@@ -361,7 +363,17 @@ if __name__ == "__main__":
 
     # Call Set 7: Keyword Ideas (1 call @ $0.50 = $0.50)
     print("\n--- Keyword Ideas (1 call) ---")
-    seed_keywords = ["dog supplements", "pet wellness", "dog vitamins"]
+    
+    # Infer seed keywords from target domain or metadata
+    if 'supplement' in TARGET_DOMAIN or 'wellness' in TARGET_DOMAIN:
+        seed_keywords = ["dog supplements", "pet wellness", "dog vitamins"]
+    elif 'ai' in TARGET_DOMAIN or 'gpt' in TARGET_DOMAIN or 'write' in TARGET_DOMAIN or 'bot' in TARGET_DOMAIN:
+        seed_keywords = ["ai writing assistant", "seo content generator", "ai copywriter"]
+    else:
+        # Generic fallback based on domain name parts
+        domain_parts = TARGET_DOMAIN.split('.')[0]
+        seed_keywords = [f"{domain_parts} reviews", f"{domain_parts} alternatives", f"what is {domain_parts}"]
+
     keyword_ideas = get_keyword_ideas(seed_keywords)
     results['keyword_ideas'] = keyword_ideas
 

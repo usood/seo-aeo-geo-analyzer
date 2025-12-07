@@ -38,7 +38,7 @@ if not dataforseo_file:
     print("ERROR: DataForSEO data not found. Run dataforseo_collection.py first.")
     exit(1)
 
-with open(dataforforseo_file, 'r') as f:
+with open(dataforseo_file, 'r') as f:
     dataforseo_data = json.load(f)
 print(f"✓ Loaded: {dataforseo_file}")
 
@@ -88,6 +88,7 @@ else:
 
 TARGET_DOMAIN = sitemap_data['metadata']['target_domain']
 COMPETITORS = sitemap_data['metadata']['competitors']
+COMPANY_NAME = sitemap_data['metadata'].get('company_name', TARGET_DOMAIN.split('.')[0].title())
 
 # Extract gap data from DataForSEO results
 gaps = dataforseo_data.get('gaps', {})
@@ -163,7 +164,7 @@ html = f"""<!DOCTYPE html>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="noindex, nofollow">
-    <title>SEO Analysis Report | Unleash Wellness | {report_date}</title>
+    <title>SEO Analysis Report | {COMPANY_NAME} | {report_date}</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500;600;700;800&display=swap');
 
@@ -172,27 +173,22 @@ html = f"""<!DOCTYPE html>
             padding: 0;
             box-sizing: border-box;
         }}
-
+        
+        /* ... existing styles ... */
         :root {{
             --primary: #f59e0b;
             --primary-dark: #d97706;
             --dark: #78350f;
             --dark-light: #92400e;
-            --bg-light: #fffbeb;
-            --bg-white: #ffffff;
-            --neutral-900: #111827;
-            --neutral-700: #374151;
-            --neutral-600: #4b5563;
-            --neutral-200: #e5e7eb;
-            --neutral-100: #f3f4f6;
+            --text-main: #1f2937;
+            --text-muted: #6b7280;
+            --glass-bg: rgba(255, 255, 255, 0.65);
+            --glass-border: rgba(255, 255, 255, 0.4);
+            --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+            --sidebar-bg: rgba(120, 53, 15, 0.9);
             --success: #10b981;
             --warning: #f59e0b;
             --danger: #ef4444;
-            --gray-50: #f9fafb;
-            --gray-100: #f3f4f6;
-            --gray-200: #e5e7eb;
-            --gray-700: #374151;
-            --gray-900: #111827;
         }}
 
         html {{
@@ -202,8 +198,20 @@ html = f"""<!DOCTYPE html>
         body {{
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
             line-height: 1.6;
-            color: var(--gray-900);
-            background: var(--gray-50);
+            color: var(--text-main);
+            background: linear-gradient(135deg, #fdfbf7 0%, #fff7ed 50%, #fff1f2 100%);
+            background-attachment: fixed;
+            min-height: 100vh;
+        }}
+
+        /* Glass Components */
+        .glass-panel {{
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--glass-shadow);
+            border-radius: 16px;
         }}
 
         .sidebar {{
@@ -212,7 +220,10 @@ html = f"""<!DOCTYPE html>
             top: 0;
             width: 280px;
             height: 100vh;
-            background: linear-gradient(180deg, var(--dark) 0%, var(--dark-light) 100%);
+            background: var(--sidebar-bg);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-right: 1px solid rgba(255,255,255,0.1);
             color: white;
             padding: 30px 0;
             overflow-y: auto;
@@ -231,6 +242,7 @@ html = f"""<!DOCTYPE html>
             display: flex;
             align-items: center;
             gap: 10px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
         }}
 
         .sidebar-subtitle {{
@@ -238,7 +250,8 @@ html = f"""<!DOCTYPE html>
             opacity: 0.7;
             margin-top: 5px;
         }}
-
+        
+        /* ... rest of styles ... */
         .nav-section {{
             padding: 0 15px;
             margin-bottom: 25px;
@@ -258,23 +271,27 @@ html = f"""<!DOCTYPE html>
             align-items: center;
             gap: 12px;
             padding: 12px 15px;
-            border-radius: 10px;
+            border-radius: 12px;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             text-decoration: none;
             color: rgba(255,255,255,0.8);
             font-size: 0.95em;
+            margin-bottom: 4px;
         }}
 
         .nav-item:hover {{
             background: rgba(255,255,255,0.1);
             color: white;
+            transform: translateX(4px);
         }}
 
         .nav-item.active {{
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            background: rgba(255, 255, 255, 0.2);
             color: white;
-            box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(4px);
         }}
 
         .nav-icon {{
@@ -292,17 +309,18 @@ html = f"""<!DOCTYPE html>
         }}
 
         .nav-badge.critical {{
-            background: var(--danger);
+            background: rgba(239, 68, 68, 0.8);
+            color: white;
         }}
 
         .main-content {{
             margin-left: 280px;
             min-height: 100vh;
+            padding-bottom: 60px;
         }}
 
         .header {{
-            background: var(--bg-white);
-            color: var(--dark);
+            background: transparent;
             padding: 50px 60px;
         }}
 
@@ -314,29 +332,34 @@ html = f"""<!DOCTYPE html>
 
         .header h1 {{
             font-family: 'Instrument Serif', Georgia, serif;
-            font-size: 2.5em;
-            font-weight: 600;
+            font-size: 3em;
+            font-weight: 500;
             margin-bottom: 8px;
             color: var(--dark);
+            text-shadow: 0 1px 2px rgba(0,0,0,0.05);
         }}
 
         .header .date {{
-            color: var(--gray-700);
+            color: var(--text-muted);
             font-weight: 400;
+            font-size: 1.1em;
         }}
 
         .score-card {{
-            background: white;
-            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.4);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            border-radius: 24px;
             padding: 25px 35px;
             text-align: center;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-            min-width: 180px;
+            box-shadow: 0 10px 40px -10px rgba(0,0,0,0.1);
+            min-width: 200px;
         }}
 
         .score-label {{
             font-size: 0.8em;
-            color: var(--gray-700);
+            color: var(--text-muted);
             text-transform: uppercase;
             letter-spacing: 1px;
             margin-bottom: 5px;
@@ -350,6 +373,7 @@ html = f"""<!DOCTYPE html>
             -webkit-text-fill-color: transparent;
             background-clip: text;
             line-height: 1;
+            filter: drop-shadow(0 2px 4px rgba(245, 158, 11, 0.2));
         }}
 
         .score-status {{
@@ -360,12 +384,12 @@ html = f"""<!DOCTYPE html>
         }}
 
         .content {{
-            padding: 40px 60px;
+            padding: 0 60px;
         }}
 
         .section {{
             display: none;
-            animation: fadeIn 0.3s ease;
+            animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }}
 
         .section.active {{
@@ -373,76 +397,108 @@ html = f"""<!DOCTYPE html>
         }}
 
         @keyframes fadeIn {{
-            from {{ opacity: 0; transform: translateY(10px); }}
+            from {{ opacity: 0; transform: translateY(20px); }}
             to {{ opacity: 1; transform: translateY(0); }}
         }}
 
         .section-title {{
             font-family: 'Instrument Serif', Georgia, serif;
-            font-size: 2em;
-            font-weight: 600;
+            font-size: 2.2em;
+            font-weight: 500;
             color: var(--dark);
-            margin-bottom: 30px;
+            margin: 40px 0 30px;
             display: flex;
             align-items: center;
             gap: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
         }}
 
         .stats-grid {{
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            gap: 20px;
+            gap: 25px;
             margin-bottom: 40px;
         }}
 
         .stat-card {{
-            background: white;
-            padding: 25px;
-            border-radius: 16px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            padding: 30px 25px;
+            border-radius: 20px;
+            box-shadow: var(--glass-shadow);
             text-align: center;
+            transition: transform 0.3s ease;
+        }}
+
+        .stat-card:hover {{
+            transform: translateY(-5px);
         }}
 
         .stat-number {{
             font-size: 2.5em;
             font-weight: 700;
             color: var(--primary);
+            margin-bottom: 5px;
+            text-shadow: 0 2px 10px rgba(245, 158, 11, 0.1);
         }}
 
         .stat-label {{
-            color: var(--gray-700);
-            font-size: 0.9em;
-            margin-top: 5px;
+            color: var(--text-muted);
+            font-size: 0.95em;
+            font-weight: 500;
         }}
 
         .data-table {{
             width: 100%;
-            background: white;
-            border-radius: 16px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
             overflow: hidden;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            box-shadow: var(--glass-shadow);
             margin-bottom: 30px;
+            border-collapse: separate;
+            border-spacing: 0;
         }}
 
         .data-table th {{
-            background: var(--dark);
+            background: rgba(120, 53, 15, 0.9);
             color: white;
-            padding: 18px 20px;
+            padding: 20px;
             text-align: left;
             font-weight: 600;
             font-size: 0.9em;
             cursor: pointer;
             user-select: none;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }}
 
-        .data-table th:hover {{
-            background: var(--dark-light);
+        .data-table th:first-child {{
+            padding-left: 30px;
+        }}
+        
+        .data-table th:last-child {{
+            padding-right: 30px;
         }}
 
         .data-table td {{
-            padding: 16px 20px;
-            border-bottom: 1px solid var(--gray-100);
+            padding: 18px 20px;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
             vertical-align: middle;
+            color: var(--text-main);
+        }}
+        
+        .data-table td:first-child {{
+            padding-left: 30px;
+        }}
+        
+        .data-table td:last-child {{
+            padding-right: 30px;
         }}
 
         .data-table tr:last-child td {{
@@ -450,15 +506,16 @@ html = f"""<!DOCTYPE html>
         }}
 
         .data-table tr:hover td {{
-            background: var(--gray-50);
+            background: rgba(255,255,255,0.4);
         }}
 
         .status-pill {{
             display: inline-block;
-            padding: 5px 12px;
+            padding: 6px 14px;
             border-radius: 20px;
             font-size: 0.8em;
             font-weight: 600;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
         }}
 
         .status-pill.informational {{ background: #dbeafe; color: #1e40af; }}
@@ -468,27 +525,25 @@ html = f"""<!DOCTYPE html>
         .status-pill.unknown {{ background: #f3f4f6; color: #6b7280; }}
 
         .priority-badge {{
-            padding: 5px 14px;
+            padding: 6px 14px;
             border-radius: 20px;
             font-size: 0.75em;
-            font-weight: 600;
+            font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 0.5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
         }}
 
         .priority-badge.critical {{
             background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
             color: var(--danger);
+            border: 1px solid rgba(239, 68, 68, 0.2);
         }}
 
         .priority-badge.high {{
             background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
             color: #b45309;
-        }}
-
-        .priority-badge.medium {{
-            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
-            color: #1d4ed8;
+            border: 1px solid rgba(245, 158, 11, 0.2);
         }}
 
         .competitor-list {{
@@ -499,47 +554,54 @@ html = f"""<!DOCTYPE html>
 
         .competitor-tag {{
             font-size: 0.75em;
-            padding: 3px 8px;
-            background: var(--gray-100);
-            border-radius: 5px;
-            color: var(--gray-700);
+            padding: 4px 10px;
+            background: rgba(255,255,255,0.5);
+            border: 1px solid rgba(0,0,0,0.1);
+            border-radius: 8px;
+            color: var(--text-muted);
         }}
 
         .insight-box {{
-            background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
-            border-left: 4px solid var(--primary);
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 20px;
+            background: rgba(255, 251, 235, 0.6);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(245, 158, 11, 0.2);
+            border-left: 5px solid var(--primary);
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 15px rgba(245, 158, 11, 0.05);
         }}
 
         .insight-box h3 {{
             color: var(--primary-dark);
             margin-bottom: 10px;
+            font-size: 1.1em;
         }}
 
         .code-block {{
             background: #1f2937;
             color: #e5e7eb;
-            padding: 20px;
-            border-radius: 8px;
+            padding: 25px;
+            border-radius: 12px;
             overflow-x: auto;
             font-family: 'Monaco', 'Courier New', monospace;
             font-size: 0.85em;
             line-height: 1.6;
-            margin: 15px 0;
+            margin: 20px 0;
+            box-shadow: inset 0 2px 10px rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.1);
         }}
 
         .performance-score {{
-            display: inline-block;
+            display: inline-flex;
             width: 60px;
             height: 60px;
             border-radius: 50%;
-            display: flex;
             align-items: center;
             justify-content: center;
             font-weight: 700;
             font-size: 1.2em;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
         }}
 
         .performance-score.good {{ background: #d1fae5; color: #065f46; }}
@@ -549,20 +611,29 @@ html = f"""<!DOCTYPE html>
         .social-grid {{
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 15px;
+            gap: 20px;
             margin-bottom: 30px;
         }}
 
         .social-card {{
-            background: white;
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            padding: 25px;
+            border-radius: 16px;
+            box-shadow: var(--glass-shadow);
             text-align: center;
+            transition: all 0.3s ease;
+        }}
+        
+        .social-card:hover {{
+            transform: translateY(-5px);
+            background: rgba(255,255,255,0.8);
         }}
 
         .social-card.inactive {{
-            opacity: 0.5;
+            opacity: 0.6;
+            filter: grayscale(0.8);
         }}
 
         .social-icon {{
@@ -574,7 +645,7 @@ html = f"""<!DOCTYPE html>
 <body>
     <nav class="sidebar">
         <div class="sidebar-header">
-            <div class="sidebar-logo">🐾 Unleash Wellness</div>
+            <div class="sidebar-logo">🐾 {COMPANY_NAME}</div>
             <div class="sidebar-subtitle">SEO Analysis Report</div>
         </div>
 
@@ -644,7 +715,7 @@ html = f"""<!DOCTYPE html>
             <div class="header-top">
                 <div>
                     <h1>SEO Analysis Report</h1>
-                    <p class="date">Unleash Wellness • {report_date} • India Market</p>
+                    <p class="date">{COMPANY_NAME} • {report_date} • India Market</p>
                 </div>
                 <div class="score-card">
                     <div class="score-label">Total Opportunities</div>
@@ -661,7 +732,7 @@ html = f"""<!DOCTYPE html>
 
                 <div class="insight-box">
                     <h3>🎯 Key Finding</h3>
-                    <p>Unleash Wellness has <strong>significant growth opportunities</strong> in organic search. Competitors are ranking for {total_gaps} high-value keywords where you currently have limited or no presence.</p>
+                    <p>{COMPANY_NAME} has <strong>significant growth opportunities</strong> in organic search. Competitors are ranking for {total_gaps} high-value keywords where you currently have limited or no presence.</p>
                 </div>
 
                 <div class="stats-grid">
@@ -917,7 +988,11 @@ html += f"""
 """
 
 # Sitemap section
-site_data = sitemap_data['sitemap_analysis'][TARGET_DOMAIN]
+site_data = sitemap_data['sitemap_analysis'].get(TARGET_DOMAIN, {})
+cat_data = site_data.get('categorization', {'product': 0, 'content': 0, 'category': 0, 'static': 0})
+fresh_data = site_data.get('freshness', {'freshness_percentage': 0})
+total_urls = site_data.get('total_urls', 0)
+
 html += f"""
             <!-- Sitemap Analysis -->
             <section id="sitemap" class="section">
@@ -925,19 +1000,19 @@ html += f"""
 
                 <div class="stats-grid">
                     <div class="stat-card">
-                        <div class="stat-number">{site_data['total_urls']}</div>
+                        <div class="stat-number">{total_urls}</div>
                         <div class="stat-label">Total URLs</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-number">{site_data['categorization']['product']}</div>
+                        <div class="stat-number">{cat_data['product']}</div>
                         <div class="stat-label">Product Pages</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-number">{site_data['categorization']['content']}</div>
+                        <div class="stat-number">{cat_data['content']}</div>
                         <div class="stat-label">Blog/Content Pages</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-number">{site_data['freshness']['freshness_percentage']}%</div>
+                        <div class="stat-number">{f"{fresh_data['freshness_percentage']}%" if fresh_data.get('freshness_percentage') is not None else '<span style="font-size:0.6em">N/A</span>'}</div>
                         <div class="stat-label">Content Freshness (90d)</div>
                     </div>
                 </div>
@@ -954,30 +1029,34 @@ html += f"""
                     <tbody>
                         <tr>
                             <td><strong>Product Pages</strong></td>
-                            <td>{site_data['categorization']['product']}</td>
-                            <td>{round(site_data['categorization']['product'] / site_data['total_urls'] * 100, 1) if site_data['total_urls'] > 0 else 0}%</td>
+                            <td>{cat_data['product']}</td>
+                            <td>{round(cat_data['product'] / total_urls * 100, 1) if total_urls > 0 else 0}%</td>
                         </tr>
                         <tr>
                             <td><strong>Collections/Categories</strong></td>
-                            <td>{site_data['categorization']['category']}</td>
-                            <td>{round(site_data['categorization']['category'] / site_data['total_urls'] * 100, 1) if site_data['total_urls'] > 0 else 0}%</td>
+                            <td>{cat_data['category']}</td>
+                            <td>{round(cat_data['category'] / total_urls * 100, 1) if total_urls > 0 else 0}%</td>
                         </tr>
                         <tr>
                             <td><strong>Blog/Content</strong></td>
-                            <td>{site_data['categorization']['content']}</td>
-                            <td>{round(site_data['categorization']['content'] / site_data['total_urls'] * 100, 1) if site_data['total_urls'] > 0 else 0}%</td>
+                            <td>{cat_data['content']}</td>
+                            <td>{round(cat_data['content'] / total_urls * 100, 1) if total_urls > 0 else 0}%</td>
                         </tr>
                         <tr>
                             <td><strong>Static Pages</strong></td>
-                            <td>{site_data['categorization']['static']}</td>
-                            <td>{round(site_data['categorization']['static'] / site_data['total_urls'] * 100, 1) if site_data['total_urls'] > 0 else 0}%</td>
+                            <td>{cat_data['static']}</td>
+                            <td>{round(cat_data['static'] / total_urls * 100, 1) if total_urls > 0 else 0}%</td>
                         </tr>
                     </tbody>
                 </table>
 
                 <div class="insight-box" style="margin-top: 20px;">
                     <h3>💡 Insight</h3>
-                    <p>Content freshness is at <strong>{site_data['freshness']['freshness_percentage']}%</strong> for the past 90 days. Regular content updates signal to search engines that your site is active and relevant. Consider updating older product descriptions and blog posts to improve freshness metrics.</p>
+                    <p>
+                        {f"Content freshness is at <strong>{fresh_data['freshness_percentage']}%</strong> for the past 90 days." if fresh_data.get('freshness_percentage') is not None else "<strong>Content freshness could not be calculated</strong> because your sitemap does not provide 'lastmod' dates."} 
+                        Regular content updates signal to search engines that your site is active and relevant. 
+                        {"" if fresh_data.get('freshness_percentage') is not None else "Consider enabling 'lastmod' in your sitemap generator."}
+                    </p>
                 </div>
             </section>
 """
@@ -1398,7 +1477,7 @@ if geo_data:
   "description": "Product description",
   "brand": {
     "@type": "Brand",
-    "name": "Unleash Wellness"
+    "name": "{COMPANY_NAME}"
   },
   "offers": {
     "@type": "Offer",
@@ -1429,7 +1508,7 @@ if geo_data:
   "headline": "How to Care for Your Dog's Joint Health",
   "author": {
     "@type": "Organization",
-    "name": "Unleash Wellness"
+    "name": "{COMPANY_NAME}"
   },
   "datePublished": "2025-12-05",
   "articleBody": "Full article text..."
@@ -1450,6 +1529,13 @@ if google_data and google_data.get('status') == 'success':
     gsc = google_data.get('gsc', {})
     ga4 = google_data.get('ga4', {})
     
+    # Safely get totals
+    totals = gsc.get('totals', {})
+    total_clicks = totals.get('clicks', 0)
+    clicks_growth = totals.get('clicks_growth', 0)
+    total_impressions = totals.get('impressions', 0)
+    impressions_growth = totals.get('impressions_growth', 0)
+    
     html += f"""
             <!-- Google Data -->
             <section id="google-data" class="section">
@@ -1461,16 +1547,16 @@ if google_data and google_data.get('status') == 'success':
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 15px;">
                         <div>
                             <div style="font-size: 0.9em; color: var(--gray-600);">Total Clicks</div>
-                            <div style="font-size: 1.8em; font-weight: 700; color: var(--dark);">{gsc['totals']['clicks']:,}</div>
-                            <div style="font-size: 0.9em; color: {'var(--success)' if gsc['totals']['clicks_growth'] >= 0 else 'var(--danger)'}; font-weight: 600;">
-                                {'+' if gsc['totals']['clicks_growth'] >= 0 else ''}{gsc['totals']['clicks_growth']}% vs prev 90d
+                            <div style="font-size: 1.8em; font-weight: 700; color: var(--dark);">{total_clicks:,}</div>
+                            <div style="font-size: 0.9em; color: {'var(--success)' if clicks_growth >= 0 else 'var(--danger)'}; font-weight: 600;">
+                                {'+' if clicks_growth >= 0 else ''}{clicks_growth}% vs prev 90d
                             </div>
                         </div>
                         <div>
                             <div style="font-size: 0.9em; color: var(--gray-600);">Total Impressions</div>
-                            <div style="font-size: 1.8em; font-weight: 700; color: var(--dark);">{gsc['totals']['impressions']:,}</div>
-                            <div style="font-size: 0.9em; color: {'var(--success)' if gsc['totals']['impressions_growth'] >= 0 else 'var(--danger)'}; font-weight: 600;">
-                                {'+' if gsc['totals']['impressions_growth'] >= 0 else ''}{gsc['totals']['impressions_growth']}% vs prev 90d
+                            <div style="font-size: 1.8em; font-weight: 700; color: var(--dark);">{total_impressions:,}</div>
+                            <div style="font-size: 0.9em; color: {'var(--success)' if impressions_growth >= 0 else 'var(--danger)'}; font-weight: 600;">
+                                {'+' if impressions_growth >= 0 else ''}{impressions_growth}% vs prev 90d
                             </div>
                         </div>
                     </div>
@@ -1814,34 +1900,40 @@ if False:
                     <p><strong>90 days:</strong> Ranking for 30-50% of target keywords, 2-3x organic traffic growth</p>
                 </div>
             </section>
-        </div>
+"""
+
+# Close the HTML document (MUST be outside the if False block!)
+html += """        </div>
     </main>
 
     <script>
         // Navigation
-        document.querySelectorAll('.nav-item').forEach(item => {{
-            item.addEventListener('click', (e) => {{
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', (e) => {
                 e.preventDefault();
 
                 // Hide all sections
-                document.querySelectorAll('.section').forEach(s => {{
+                document.querySelectorAll('.section').forEach(s => {
                     s.classList.remove('active');
-                }});
+                });
 
                 // Show clicked section
                 const sectionId = item.dataset.section;
-                document.getElementById(sectionId).classList.add('active');
+                const targetSection = document.getElementById(sectionId);
+                if (targetSection) {
+                    targetSection.classList.add('active');
+                }
 
                 // Update nav active state
-                document.querySelectorAll('.nav-item').forEach(i => {{
+                document.querySelectorAll('.nav-item').forEach(i => {
                     i.classList.remove('active');
-                }});
+                });
                 item.classList.add('active');
-            }});
-        }});
+            });
+        });
 
         // Table sorting
-        function sortTable(header, columnIndex) {{
+        function sortTable(header, columnIndex) {
             const table = header.closest('table');
             const tbody = table.querySelector('tbody');
             const rows = Array.from(tbody.querySelectorAll('tr'));
@@ -1851,7 +1943,7 @@ if False:
             const newOrder = currentOrder === 'asc' ? 'desc' : 'asc';
 
             // Sort rows
-            rows.sort((a, b) => {{
+            rows.sort((a, b) => {
                 const aCell = a.cells[columnIndex];
                 const bCell = b.cells[columnIndex];
 
@@ -1863,22 +1955,22 @@ if False:
                 const aNum = parseFloat(aValue.replace(/[^0-9.-]/g, ''));
                 const bNum = parseFloat(bValue.replace(/[^0-9.-]/g, ''));
 
-                if (!isNaN(aNum) && !isNaN(bNum)) {{
+                if (!isNaN(aNum) && !isNaN(bNum)) {
                     return newOrder === 'asc' ? aNum - bNum : bNum - aNum;
-                }}
+                }
 
                 // String comparison
                 return newOrder === 'asc'
                     ? aValue.localeCompare(bValue)
                     : bValue.localeCompare(aValue);
-            }});
+            });
 
             // Update table
             rows.forEach(row => tbody.appendChild(row));
 
             // Update header sort indicator
             header.dataset.order = newOrder;
-        }}
+        }
     </script>
 </body>
 </html>

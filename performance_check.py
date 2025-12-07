@@ -21,35 +21,51 @@ load_dotenv()
 API_URL = "https://www.googleapis.com/pagespeedonline/v5/runPagespeed"
 API_KEY = os.getenv('PAGESPEED_API_KEY')
 
+# Load project context
 project_dir = get_current_project_path()
 analysis_file = get_latest_file("analysis_data_*.json", project_dir)
 
 pages = []
 
-if not analysis_file:
-    print(f"ERROR: No analysis_data file found in {project_dir}. Run collect_data.py first.")
-    exit(1)
+# Try loading from config.yaml first
+try:
+    import yaml
+    if os.path.exists('config.yaml'):
+        with open('config.yaml', 'r') as f:
+            config = yaml.safe_load(f)
+            raw_pages = config.get('analysis', {}).get('performance_urls', [])
+            # Filter out empty strings
+            pages = [p for p in raw_pages if p and p.strip()]
+            if pages:
+                print(f"✓ Loaded {len(pages)} performance URLs from config.yaml")
+            elif raw_pages:
+                 print(f"ℹ Config has {len(raw_pages)} empty performance URL slots. Will use auto-detection.")
+except ImportError:
+    pass
 
-with open(analysis_file) as f:
-    data = json.load(f)
-    target_domain = data.get('metadata', {}).get('target_domain')
-    sitemap = data.get('sitemap_analysis', {}).get(target_domain, {})
-    
-    sample_urls = sitemap.get('sample_urls', [])
-    seen_types = set()
-    
-    # Add homepage
-    pages.append(f"https://{target_domain}/")
-    
-    for url_data in sample_urls:
-        u_type = url_data.get('type')
-        if u_type in ['product', 'category', 'content'] and u_type not in seen_types:
-            pages.append(url_data['url'])
-            seen_types.add(u_type)
+# Fallback to dynamic analysis if config is empty
+if not pages and analysis_file:
+    print("⚠ Config URLs not found. Falling back to dynamic analysis data.")
+    with open(analysis_file) as f:
+        data = json.load(f)
+        target_domain = data.get('metadata', {}).get('target_domain')
+        sitemap = data.get('sitemap_analysis', {}).get(target_domain, {})
+        
+        sample_urls = sitemap.get('sample_urls', [])
+        seen_types = set()
+        
+        # Add homepage
+        pages.append(f"https://{target_domain}/")
+        
+        for url_data in sample_urls:
+            u_type = url_data.get('type')
+            if u_type in ['product', 'category', 'content'] and u_type not in seen_types:
+                pages.append(url_data['url'])
+                seen_types.add(u_type)
 
 # Fail if no dynamic URLs
 if not pages:
-    print("ERROR: No dynamic URLs could be determined from analysis_data.json. Ensure sitemap analysis completed.")
+    print("ERROR: No dynamic URLs could be determined. Ensure sitemap analysis completed or config.yaml is set.")
     exit(1)
 
 results = []

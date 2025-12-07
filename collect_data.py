@@ -11,6 +11,7 @@ import xml.etree.ElementTree as ET
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin, urlparse
 import time
+import os
 from datetime import datetime
 
 # Configuration
@@ -62,9 +63,11 @@ def fetch_sitemap(domain):
     print(f"\n[Sitemap] Fetching sitemap for {domain}...")
 
     sitemap_urls = [
+        f"https://{domain}/sitemap-index.xml",
         f"https://{domain}/sitemap.xml",
         f"https://{domain}/sitemap_index.xml",
         f"https://www.{domain}/sitemap.xml",
+        f"https://www.{domain}/sitemap-index.xml",
     ]
 
     for sitemap_url in sitemap_urls:
@@ -137,18 +140,33 @@ def parse_sitemap_urls(root, namespaces):
 
 
 def categorize_url(url):
-    """Categorize URL by type (Shopify theme)"""
+    """Categorize URL by type (Expanded heuristics)"""
     url_lower = url.lower()
 
-    if '/products/' in url_lower:
+    # Product/Service related
+    if any(x in url_lower for x in ['/products/', '/pricing', '/features', '/solution', '/service', '/tool']):
         return 'product'
-    elif '/collections/' in url_lower:
+    
+    # Categories/Tags
+    elif any(x in url_lower for x in ['/collections/', '/category/', '/tag/', '/topics/', '/sections/']):
         return 'category'
-    elif '/blogs/' in url_lower or '/articles/' in url_lower:
+        
+    # Content/Blog
+    elif any(x in url_lower for x in ['/blogs/', '/articles/', '/news/', '/post/', '/guide/', '/tutorial/', '/blog']):
         return 'content'
-    elif '/pages/' in url_lower:
+    elif any(x in url_lower for x in ['/2023/', '/2024/', '/2025/']): # Date based URLs
+        return 'content'
+        
+    # Static Pages
+    elif any(x in url_lower for x in ['/pages/', '/about', '/contact', '/terms', '/privacy', '/legal']):
         return 'static'
+        
     else:
+        # Heuristic: if URL path is deep (>3 segments) and no extension, likely content
+        path = urlparse(url).path
+        if path.count('/') > 2 and '.' not in path.split('/')[-1]:
+            return 'content'
+            
         return 'other'
 
 
@@ -171,12 +189,15 @@ def analyze_sitemap_urls(urls, domain):
 
     # Calculate freshness (URLs modified in last 90 days)
     fresh_count = 0
+    urls_with_date = 0
+    
     if urls:
         from datetime import datetime, timedelta
         cutoff_date = datetime.now() - timedelta(days=90)
 
         for url_data in urls:
             if url_data.get('lastmod'):
+                urls_with_date += 1
                 try:
                     mod_date = datetime.fromisoformat(url_data['lastmod'].replace('Z', '+00:00'))
                     if mod_date > cutoff_date:
@@ -184,14 +205,18 @@ def analyze_sitemap_urls(urls, domain):
                 except:
                     pass
 
-    freshness_pct = (fresh_count / len(urls) * 100) if urls else 0
+    if urls_with_date > 0:
+        freshness_pct = (fresh_count / len(urls) * 100)
+    else:
+        freshness_pct = None
 
     return {
         'total_urls': len(urls),
         'categorization': categorization,
         'freshness': {
             'fresh_count': fresh_count,
-            'freshness_percentage': round(freshness_pct, 1)
+            'freshness_percentage': round(freshness_pct, 1) if freshness_pct is not None else None,
+            'has_dates': urls_with_date > 0
         },
         'sample_urls': urls[:20]  # First 20 for reference
     }

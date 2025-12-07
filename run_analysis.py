@@ -104,7 +104,7 @@ def show_menu():
 
     steps = [
         ("1", "Sitemap & Social Analysis", "collect_data.py", "~30 seconds"),
-        ("2", "DataForSEO API Collection", "dataforseo_collection.py", "~20-30 minutes, ~$6.45"),
+        ("2", "DataForSEO API Collection", "dataforseo_collection.py", "~2 minutes"),
         ("3", "GEO (JSON-LD) Analysis", "geo_analyzer.py", "~30 seconds"),
         ("4", "Google Data (GSC & GA4)", "google_integration.py", "~10 seconds"),
         ("5", "LLM Insights & Strategy", "llm_runner.py", "~1-2 minutes"),

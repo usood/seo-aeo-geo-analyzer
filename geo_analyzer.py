@@ -41,6 +41,11 @@ with open(analysis_file) as f:
             elif u_type == 'category' and 'collection' not in test_urls:
                 test_urls['collection'] = url_data['url']
 
+    # Fallback if no URLs found from sitemap (e.g. sitemap fetch failed)
+    if not test_urls:
+        print("⚠ Warning: No URLs found from sitemap. Using homepage fallback.")
+        test_urls['homepage'] = f"https://{target_domain}/"
+
 # Fail if no dynamic URLs
 if not test_urls:
     print("ERROR: No dynamic URLs could be determined from analysis_data.json. Ensure sitemap analysis completed.")
