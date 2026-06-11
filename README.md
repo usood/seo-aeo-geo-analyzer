@@ -18,12 +18,16 @@ This project is actively maintained as an open-source SEO and AI-search analysis
 
 ## Features
 
-- **🎯 Keyword Gap Analysis** - Find 100+ high-value keywords your competitors rank for
-- **🤖 GEO (Generative Engine Optimization)** - Optimize for AI search experiences, including ChatGPT, Perplexity, Google AI Overviews, and Google AI Mode
-- **⚡ Performance Audit** - Core Web Vitals analysis with PageSpeed Insights
-- **📊 Competitive Intelligence** - Domain metrics, backlinks, and SERP analysis
-- **📝 Content Opportunities** - Categorized by intent (informational, transactional, commercial)
-- **📈 Actionable Roadmap** - 30/60/90-day implementation plan
+Each capability maps to an SEO/AEO/GEO aspect, with _why it matters_ called out so results are easy to prioritize:
+
+- **🎯 Keyword Gap Analysis** - Find 100+ high-value keywords your competitors rank for. _Why it matters: surfaces proven demand you're currently invisible for — usually the fastest path to incremental organic traffic._
+- **🗺️ Sitemap & Content Structure** - Crawl the sitemap and categorize/measure freshness of pages. _Why it matters: crawlability, a clean structure, and fresh content are the foundation Google and AI engines rely on to index you at all._
+- **🤖 GEO (Generative Engine Optimization)** - Optimize for AI search experiences, including ChatGPT, Perplexity, Google AI Overviews, and Google AI Mode. _Why it matters: AI answers increasingly resolve queries before the click, so structured, citable content is how you stay visible._
+- **⚡ Performance Audit** - Core Web Vitals analysis with PageSpeed Insights. _Why it matters: speed and visual stability are confirmed Google ranking signals and directly affect conversion._
+- **📊 Competitive Intelligence** - Domain metrics, backlinks, and SERP analysis. _Why it matters: benchmarks the gap to competitors so effort targets winnable terms instead of lost causes._
+- **📝 Content Opportunities** - Categorized by intent (informational, transactional, commercial). _Why it matters: matching content to search intent is what converts rankings into revenue._
+- **🧭 Site `llms.txt` Generator** - Emit a curated `llms.txt` of the analyzed site's key entry points. _Why it matters: helps AI agents and LLM tools discover your most important pages (optional; not a Google Search requirement)._
+- **📈 Actionable Roadmap** - 30/60/90-day implementation plan. _Why it matters: turns findings into sequenced, shippable work._
 - **🎨 Beautiful HTML Reports** - Interactive, sortable data tables
 - **📤 Data Export** - Export analysis data to CSV, Excel, and PDF formats
 
@@ -96,44 +100,47 @@ Pre-configured examples for different business types:
 
 ### Data Collection Scripts
 
-| Script | Purpose | Output | Time |
-|--------|---------|--------|------|
-| `collect_data.py` | Sitemap & social analysis | `analysis_data_*.json` | ~30s |
-| `dataforseo_collection.py` | Keyword & SERP data | `dataforseo_final_*.json` | ~25min |
-| `geo_analyzer.py` | JSON-LD schema extraction | `geo_analysis.json` | ~30s |
-| `performance_check.py` | Core Web Vitals | `performance_analysis.json` | ~3min |
-| `export_data.py` | Data export (CSV/XLSX/PDF) | `exports/` | ~10s |
+| Script                     | Purpose                                                      | Output                      | Time   |
+| -------------------------- | ------------------------------------------------------------ | --------------------------- | ------ |
+| `collect_data.py`          | Sitemap & social analysis                                    | `analysis_data_*.json`      | ~30s   |
+| `dataforseo_collection.py` | Keyword & SERP data                                          | `dataforseo_final_*.json`   | ~25min |
+| `geo_analyzer.py`          | JSON-LD schema extraction                                    | `geo_analysis.json`         | ~30s   |
+| `performance_check.py`     | Core Web Vitals                                              | `performance_analysis.json` | ~3min  |
+| `export_data.py`           | Data export (CSV/XLSX/PDF)                                   | `exports/`                  | ~10s   |
+| `generate_site_llms.py`    | Recommended `llms.txt` for the analyzed site (offline, free) | `<domain>-llms.txt`         | ~5s    |
 
 ### Report Generation
 
-| Script | Purpose | Output |
-|--------|---------|--------|
+| Script               | Purpose     | Output                      |
+| -------------------- | ----------- | --------------------------- |
 | `generate_report.py` | HTML report | `seo-audit-YYYY-MM-DD.html` |
 
 ### Orchestrator
 
-| Script | Purpose |
-|--------|---------|
+| Script            | Purpose                      |
+| ----------------- | ---------------------------- |
 | `run_analysis.py` | Interactive workflow manager |
 
 ## API Costs
 
 Uses [DataForSEO](https://dataforseo.com/) API (affordable SEO data):
 
-| Call Type | Quantity | Estimated Cost | Actual Cost* |
-|-----------|----------|----------------|--------------|
-| Domain Metrics | 5 | $0.25 | ~$0.05 |
-| Ranked Keywords | 5 | $2.50 | ~$0.10 |
-| Keyword Enrichment | 1 | $0.50 | ~$0.03 |
-| Search Intent | 1 | $0.20 | ~$0.02 |
-| SERP Analysis | 3 | $1.50 | ~$0.02 |
-| Backlinks | 1 | $0.50 | ~$0.01 |
-| Keyword Ideas | 1 | $0.50 | ~$0.01 |
-| **TOTAL** | **17** | **$6.45** | **~$0.24** |
+| Call Type          | Quantity | Estimated Cost | Actual Cost\* |
+| ------------------ | -------- | -------------- | ------------- |
+| Domain Metrics     | 5        | $0.25          | ~$0.05        |
+| Ranked Keywords    | 5        | $2.50          | ~$0.10        |
+| Keyword Enrichment | 1        | $0.50          | ~$0.03        |
+| Search Intent      | 1        | $0.20          | ~$0.02        |
+| SERP Analysis      | 3        | $1.50          | ~$0.02        |
+| Backlinks          | 1        | $0.50          | ~$0.01        |
+| Keyword Ideas      | 1        | $0.50          | ~$0.01        |
+| **TOTAL**          | **17**   | **$6.45**      | **~$0.24**    |
 
-\* *Actual costs are significantly lower than list prices due to DataForSEO's on-demand pricing model. Your actual cost may vary based on data volume returned.*
+\* _Actual costs are significantly lower than list prices due to DataForSEO's on-demand pricing model. Your actual cost may vary based on data volume returned._
 
 **PageSpeed Insights API** is free from Google (requires API key: set `PAGESPEED_API_KEY` in `.env`).
+
+**Cost of a full run:** DataForSEO (step 2) is the only paid component — roughly **$6.45 list / ~$0.24 actual** per complete analysis. Every other step runs offline or against free APIs: sitemap & social collection, GEO/JSON-LD analysis, performance (free PSI), data export, and the site `llms.txt` generator (step 9) add **no API cost**. LLM insights (step 5) cost only if you configure a paid `GEMINI_API_KEY`/`OPENROUTER_API_KEY`.
 
 ## Report Sections
 
@@ -164,18 +171,21 @@ See [docs/AI_READINESS.md](docs/AI_READINESS.md) for implementation guidance and
 ## Use Cases
 
 ### D2C E-commerce
+
 - Identify product keywords competitors rank for
 - Find content opportunities (buying guides, comparisons)
 - Optimize product pages for transactional keywords
 - Improve Core Web Vitals for better mobile shopping experience
 
 ### B2B SaaS
+
 - Discover bottom-of-funnel keywords
 - Find educational content gaps
 - Optimize for commercial intent searches
 - GEO optimization for AI-powered search
 
 ### B2C Services
+
 - Local SEO opportunities
 - Service-specific keyword gaps
 - Content marketing ideas
@@ -257,6 +267,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## Credits
 
 Built with:
+
 - [DataForSEO](https://dataforseo.com/) - SEO data API
 - [Google PageSpeed Insights](https://developers.google.com/speed/docs/insights/v5/get-started) - Performance metrics
 - [Beautiful Soup](https://www.crummy.com/software/BeautifulSoup/) - HTML parsing
@@ -274,7 +285,7 @@ Built with:
 - [x] Integration with Google Search Console
 - [ ] Agentic browsing readiness checks
 - [ ] WebMCP opportunity detection for actionable site flows
-- [ ] `llms.txt` generator for analyzed websites
+- [x] `llms.txt` generator for analyzed websites
 - [ ] Automated scheduling (weekly/monthly reports)
 - [ ] Slack/Email notifications
 - [ ] Dashboard view for tracking over time
