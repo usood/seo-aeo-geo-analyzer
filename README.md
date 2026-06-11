@@ -28,6 +28,7 @@ Each capability maps to an SEO/AEO/GEO aspect, with _why it matters_ called out 
 - **📝 Content Opportunities** - Categorized by intent (informational, transactional, commercial). _Why it matters: matching content to search intent is what converts rankings into revenue._
 - **🧭 Site `llms.txt` Generator** - Emit a curated `llms.txt` of the analyzed site's key entry points. _Why it matters: helps AI agents and LLM tools discover your most important pages (optional; not a Google Search requirement)._
 - **🧩 WebMCP Opportunity Analysis** - Flag action-oriented pages/flows (checkout, signup, booking, forms) and score WebMCP readiness. _Why it matters: as AI agents start completing tasks in the browser, exposing structured tools for these flows is how you stay actionable to them (experimental signal)._
+- **🧭 Agentic Browsing Audit** - Run Lighthouse's experimental agentic-browsing category (with graceful fallback when unavailable). _Why it matters: a forward-looking readiness signal for how well AI agents can perceive and act on your pages._
 - **📈 Actionable Roadmap** - 30/60/90-day implementation plan. _Why it matters: turns findings into sequenced, shippable work._
 - **🎨 Beautiful HTML Reports** - Interactive, sortable data tables
 - **📤 Data Export** - Export analysis data to CSV, Excel, and PDF formats
@@ -101,15 +102,16 @@ Pre-configured examples for different business types:
 
 ### Data Collection Scripts
 
-| Script                     | Purpose                                                      | Output                      | Time   |
-| -------------------------- | ------------------------------------------------------------ | --------------------------- | ------ |
-| `collect_data.py`          | Sitemap & social analysis                                    | `analysis_data_*.json`      | ~30s   |
-| `dataforseo_collection.py` | Keyword & SERP data                                          | `dataforseo_final_*.json`   | ~25min |
-| `geo_analyzer.py`          | JSON-LD schema extraction                                    | `geo_analysis.json`         | ~30s   |
-| `performance_check.py`     | Core Web Vitals                                              | `performance_analysis.json` | ~3min  |
-| `export_data.py`           | Data export (CSV/XLSX/PDF)                                   | `exports/`                  | ~10s   |
-| `generate_site_llms.py`    | Recommended `llms.txt` for the analyzed site (offline, free) | `<domain>-llms.txt`         | ~5s    |
-| `webmcp_analyzer.py`       | WebMCP opportunity scoring for action flows (offline, free)  | `webmcp_analysis.json`      | ~5s    |
+| Script                      | Purpose                                                      | Output                      | Time    |
+| --------------------------- | ------------------------------------------------------------ | --------------------------- | ------- |
+| `collect_data.py`           | Sitemap & social analysis                                    | `analysis_data_*.json`      | ~30s    |
+| `dataforseo_collection.py`  | Keyword & SERP data                                          | `dataforseo_final_*.json`   | ~25min  |
+| `geo_analyzer.py`           | JSON-LD schema extraction                                    | `geo_analysis.json`         | ~30s    |
+| `performance_check.py`      | Core Web Vitals                                              | `performance_analysis.json` | ~3min   |
+| `export_data.py`            | Data export (CSV/XLSX/PDF)                                   | `exports/`                  | ~10s    |
+| `generate_site_llms.py`     | Recommended `llms.txt` for the analyzed site (offline, free) | `<domain>-llms.txt`         | ~5s     |
+| `webmcp_analyzer.py`        | WebMCP opportunity scoring for action flows (offline, free)  | `webmcp_analysis.json`      | ~5s     |
+| `agentic_browsing_check.py` | Local Lighthouse agentic-browsing audit (graceful fallback)  | `agentic_browsing.json`     | ~1-3min |
 
 ### Report Generation
 
@@ -142,7 +144,7 @@ Uses [DataForSEO](https://dataforseo.com/) API (affordable SEO data):
 
 **PageSpeed Insights API** is free from Google (requires API key: set `PAGESPEED_API_KEY` in `.env`).
 
-**Cost of a full run:** DataForSEO (step 2) is the only paid component — roughly **$6.45 list / ~$0.24 actual** per complete analysis. Every other step runs offline or against free APIs: sitemap & social collection, GEO/JSON-LD analysis, performance (free PSI), data export, the site `llms.txt` generator (step 9), and WebMCP opportunity analysis (step 10) add **no API cost**. LLM insights (step 5) cost only if you configure a paid `GEMINI_API_KEY`/`OPENROUTER_API_KEY`.
+**Cost of a full run:** DataForSEO (step 2) is the only paid component — roughly **$6.45 list / ~$0.24 actual** per complete analysis. Every other step runs offline or against free APIs: sitemap & social collection, GEO/JSON-LD analysis, performance (free PSI), data export, the site `llms.txt` generator (step 9), WebMCP opportunity analysis (step 10), and the Lighthouse agentic-browsing audit (step 11, runs the local Lighthouse CLI) add **no API cost**. LLM insights (step 5) cost only if you configure a paid `GEMINI_API_KEY`/`OPENROUTER_API_KEY`.
 
 ## Report Sections
 
@@ -285,7 +287,7 @@ Built with:
 - [ ] Multi-language support for reports
 - [x] Export to CSV/Excel/PDF
 - [x] Integration with Google Search Console
-- [ ] Agentic browsing readiness checks
+- [x] Agentic browsing readiness checks
 - [x] WebMCP opportunity detection for actionable site flows
 - [x] `llms.txt` generator for analyzed websites
 - [ ] Automated scheduling (weekly/monthly reports)
