@@ -1,0 +1,57 @@
+# SEO Gap Analyzer Configuration
+# Example: Consumer app
+
+target:
+  domain: "duolingo.com"
+  name: "Duolingo"
+  industry: "Consumer App - Education"
+
+competitors:
+  - domain: "babbel.com"
+    name: "Babbel"
+  - domain: "busuu.com"
+    name: "Busuu"
+  - domain: "memrise.com"
+    name: "Memrise"
+  - domain: "rosettastone.com"
+    name: "Rosetta Stone"
+
+location:
+  country: "United States"
+  language_code: "en"
+
+branding:
+  primary_color: "#58cc02"
+  primary_dark: "#46a302"
+  accent_color: "#1cb0f6"
+  logo_emoji: "📱"
+
+analysis:
+  keywords_per_domain: 100
+  test_urls:
+    homepage: ""
+    product: "https://www.duolingo.com/learn"
+    category: "https://www.duolingo.com/courses"
+    blog: "https://blog.duolingo.com/"
+  performance_urls:
+    - "https://www.duolingo.com/"
+    - "https://www.duolingo.com/learn"
+    - "https://blog.duolingo.com/"
+
+seed_keywords:
+  - "language learning app"
+  - "learn Spanish online"
+  - "free language lessons"
+
+report:
+  company_name: "Duolingo"
+  report_title: "Consumer App SEO Gap Analysis"
+  author: "Growth Team"
+  include_sections:
+    - executive_summary
+    - sitemap_analysis
+    - social_presence
+    - keyword_gaps
+    - geo_optimization
+    - performance_audit
+    - recommendations

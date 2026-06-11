@@ -12,6 +12,10 @@ from google_integration import GoogleIntegration
 
 class TestGoogleIntegration(unittest.TestCase):
     def setUp(self):
+        auth_patcher = patch('google_integration.GoogleIntegration.authenticate_user')
+        self.addCleanup(auth_patcher.stop)
+        auth_patcher.start()
+
         self.gi = GoogleIntegration()
         # Mock credentials to bypass the file check
         self.gi.creds = MagicMock()

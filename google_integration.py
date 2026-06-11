@@ -93,6 +93,9 @@ class GoogleIntegration:
 
     def init_gsc(self):
         """Initialize Search Console Service"""
+        if self.gsc_service:
+            return True
+
         if self.creds and not self.gsc_service:
             try:
                 self.gsc_service = build('searchconsole', 'v1', credentials=self.creds)
@@ -103,6 +106,9 @@ class GoogleIntegration:
 
     def init_ga4(self):
         """Initialize GA4 Client"""
+        if self.ga4_client:
+            return True
+
         if self.creds and not self.ga4_client:
             try:
                 self.ga4_client = BetaAnalyticsDataClient(credentials=self.creds)
