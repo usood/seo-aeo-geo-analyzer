@@ -6,7 +6,12 @@ import unittest
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from generate_site_llms import build_llms_txt, _link_label
+from generate_site_llms import (
+    build_llms_txt,
+    _link_label,
+    _safe_link_url,
+    _safe_filename_stem,
+)
 
 
 SAMPLE = {
@@ -67,6 +72,47 @@ class BuildLlmsTxtTest(unittest.TestCase):
         out = build_llms_txt({})
         self.assertIn("# Website", out)
         self.assertIn("## Notes", out)
+
+
+class SecurityHardeningTest(unittest.TestCase):
+    def test_safe_link_url_accepts_http_and_https(self):
+        self.assertEqual(_safe_link_url("https://x.com/a"), "https://x.com/a")
+        self.assertEqual(_safe_link_url("http://x.com/a"), "http://x.com/a")
+
+    def test_safe_link_url_rejects_dangerous_schemes(self):
+        self.assertIsNone(_safe_link_url("javascript:alert(1)"))
+        self.assertIsNone(_safe_link_url("data:text/html,evil"))
+        self.assertIsNone(_safe_link_url("file:///etc/passwd"))
+
+    def test_safe_link_url_rejects_control_chars_and_markdown_breakers(self):
+        self.assertIsNone(_safe_link_url("https://x.com/a\nb"))
+        self.assertIsNone(_safe_link_url("https://x.com/a b"))
+        self.assertIsNone(_safe_link_url("https://x.com/a(b)"))
+
+    def test_malicious_sitemap_urls_excluded_from_output(self):
+        data = {
+            "metadata": {"target_domain": "x.com"},
+            "sitemap_analysis": {
+                "x.com": {
+                    "total_urls": 2,
+                    "sample_urls": [
+                        {"url": "javascript:alert(1)", "type": "product"},
+                        {"url": "https://x.com/products/ok", "type": "product"},
+                    ],
+                }
+            },
+        }
+        out = build_llms_txt(data)
+        self.assertNotIn("javascript:", out)
+        self.assertIn("https://x.com/products/ok", out)
+
+    def test_safe_filename_stem_strips_traversal(self):
+        self.assertEqual(_safe_filename_stem("../../etc/passwd"), "etc_passwd")
+        self.assertEqual(_safe_filename_stem("a/b/c"), "a_b_c")
+        self.assertEqual(_safe_filename_stem("good-domain.com"), "good-domain.com")
+        self.assertEqual(_safe_filename_stem(""), "site")
+        # No path separator can survive, so os.path.join cannot escape.
+        self.assertNotIn("/", _safe_filename_stem("../../x"))
 
 
 if __name__ == "__main__":
