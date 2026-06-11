@@ -5,6 +5,7 @@
 .env.local
 *.yaml
 !config.example.yaml
+!examples/configs/*.yaml
 client_secret.json
 token.json
 service_account.json
