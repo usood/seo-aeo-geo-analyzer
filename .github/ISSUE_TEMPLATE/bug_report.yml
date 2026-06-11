@@ -1,0 +1,64 @@
+name: Bug report
+description: Report a problem with the analyzer, report generation, or integrations
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to file a bug. Please do **not** include API keys,
+        OAuth tokens, or the contents of your `config.yaml` / `.env`.
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: A clear description of the bug and what you expected instead.
+      placeholder: "When I run `python run_analysis.py` and choose ..., it ..."
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      description: Minimal steps so we can reproduce the issue.
+      placeholder: |
+        1. Configure config.yaml with ...
+        2. Run `python ...`
+        3. See error
+    validations:
+      required: true
+  - type: dropdown
+    id: component
+    attributes:
+      label: Component
+      description: Which part of the pipeline is affected?
+      options:
+        - run_analysis (orchestrator / menu)
+        - collect_data (sitemap / metadata / social)
+        - dataforseo_collection (keyword data)
+        - google_integration (GSC / GA4)
+        - generate_report (HTML)
+        - export_data (CSV / Excel / PDF)
+        - geo_analyzer / performance_check
+        - llm_analyzer / llm_runner
+        - other / not sure
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant output / traceback
+      description: Paste the error output. Redact any secrets or private domains.
+      render: shell
+  - type: input
+    id: python-version
+    attributes:
+      label: Python version
+      placeholder: "e.g. 3.11.6"
+    validations:
+      required: true
+  - type: input
+    id: os
+    attributes:
+      label: Operating system
+      placeholder: "e.g. macOS 14, Ubuntu 22.04"

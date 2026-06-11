@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security vulnerability
+    url: https://github.com/usood/seo-aeo-geo-analyzer/security/advisories/new
+    about: Please report security issues privately via a security advisory, not a public issue. See SECURITY.md.
+  - name: Question / usage help
+    url: https://github.com/usood/seo-aeo-geo-analyzer/discussions
+    about: Ask setup or usage questions in Discussions.
