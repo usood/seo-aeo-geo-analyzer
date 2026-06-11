@@ -119,7 +119,8 @@ def export_to_excel(dfs, output_dir):
     except Exception as e:
         print(f"⚠ Excel export failed: {e}")
 
-class PDF(FPDF):
+if HAS_FPDF:
+    class PDF(FPDF):
         def header(self):
             self.set_font('Arial', 'B', 15)
             self.cell(0, 10, 'SEO Analysis Data Export', 0, 1, 'C')

@@ -98,7 +98,7 @@ def find_latest_file(pattern):
 
 def show_menu():
     """Show interactive menu"""
-    print_header("UNLEASH WELLNESS SEO ANALYSIS WORKFLOW")
+    print_header("SEO ANALYSIS WORKFLOW")
 
     print(f"{Colors.BOLD}Available Analysis Steps:{Colors.ENDC}\n")
 
@@ -128,7 +128,7 @@ def show_menu():
 
 def check_prerequisites(step):
     """Check if prerequisites for a step are met"""
-    if step == "6":  # Generate report needs data files
+    if step == "7":  # Generate report needs data files
         # Check for dataforseo data
         dataforseo_file = find_latest_file("dataforseo_final_*.json")
         if not dataforseo_file:
@@ -148,7 +148,7 @@ def check_prerequisites(step):
 
         # Check for performance data
         if not os.path.exists("performance_analysis.json"):
-            print_warning("Performance data not found. Run step 5 first.")
+            print_warning("Performance data not found. Run step 6 first.")
             return False
 
     return True
@@ -200,7 +200,7 @@ def run_all_steps():
         print(f"\n{Colors.GREEN}{Colors.BOLD}🎉 All steps completed successfully!{Colors.ENDC}")
 
         # Find and display report location
-        report_file = find_latest_file("unleash-wellness-seo-audit-*.html")
+        report_file = find_latest_file("*-seo-audit-*.html")
         if report_file:
             print_info(f"Report saved to: {report_file}")
             print_info(f"Open with: open {report_file}")
@@ -215,8 +215,8 @@ def show_status():
         ("analysis_data_*.json", "Sitemap & Social Data", "Step 1"),
         ("dataforseo_final_*.json", "DataForSEO Complete Data", "Step 2"),
         ("geo_analysis.json", "GEO Analysis", "Step 3"),
-        ("performance_analysis.json", "Performance Data", "Step 4"),
-        ("unleash-wellness-seo-audit-*.html", "HTML Report", "Step 5")
+        ("performance_analysis.json", "Performance Data", "Step 6"),
+        ("*-seo-audit-*.html", "HTML Report", "Step 7")
     ]
 
     for pattern, description, step in files_to_check:
@@ -238,6 +238,60 @@ def show_status():
 
     print()
 
+def handle_choice(choice):
+    """Run a menu choice. Return False when the menu loop should exit."""
+    if choice == "Q":
+        print(f"\n{Colors.CYAN}Goodbye!{Colors.ENDC}")
+        return False
+
+    if choice == "A":
+        confirm = input(f"\n{Colors.YELLOW}This will run all steps (~25-35 minutes, ~$6.45 cost). Continue? (y/N): {Colors.ENDC}").strip().lower()
+        if confirm == 'y':
+            run_all_steps()
+        else:
+            print_info("Cancelled.")
+
+    elif choice == "1":
+        run_script("collect_data.py", "Sitemap & Social Analysis")
+
+    elif choice == "2":
+        confirm = input(f"\n{Colors.YELLOW}This will run DataForSEO API calls (~$6.45 cost). Continue? (y/N): {Colors.ENDC}").strip().lower()
+        if confirm == 'y':
+            run_script("dataforseo_collection.py", "DataForSEO API Collection")
+        else:
+            print_info("Cancelled.")
+
+    elif choice == "3":
+        run_script("geo_analyzer.py", "GEO JSON-LD Analysis")
+
+    elif choice == "4":
+        run_script("google_integration.py", "Google Data Integration")
+
+    elif choice == "5":
+        run_script("llm_runner.py", "LLM Strategic Analysis")
+
+    elif choice == "6":
+        run_script("performance_check.py", "Performance Analysis")
+
+    elif choice == "7":
+        if check_prerequisites("7"):
+            if os.path.exists("generate_report.py"):
+                run_script("generate_report.py", "HTML Report Generation")
+            else:
+                print_error("Report generator script not found!")
+                print_info("The report generator needs to be created from analyze_and_generate_report.py")
+        else:
+            print_error("Prerequisites not met. Please run required steps first.")
+
+    elif choice == "8":
+        run_script("export_data.py", "Export Data to CSV/Excel/PDF")
+
+    else:
+        print_error("Invalid option. Please try again.")
+
+    return True
+
+
 def main():
     """Main orchestrator function"""
     # Check dependencies
@@ -252,55 +306,8 @@ def main():
         show_status()
 
         choice = input(f"{Colors.BOLD}Select option: {Colors.ENDC}").strip().upper()
-
-        if choice == "Q":
-            print(f"\n{Colors.CYAN}Goodbye!{Colors.ENDC}")
+        if not handle_choice(choice):
             break
-
-        elif choice == "A":
-            confirm = input(f"\n{Colors.YELLOW}This will run all steps (~25-35 minutes, ~$6.45 cost). Continue? (y/N): {Colors.ENDC}").strip().lower()
-            if confirm == 'y':
-                run_all_steps()
-            else:
-                print_info("Cancelled.")
-
-        elif choice == "1":
-            run_script("collect_data.py", "Sitemap & Social Analysis")
-
-        elif choice == "2":
-            confirm = input(f"\n{Colors.YELLOW}This will run DataForSEO API calls (~$6.45 cost). Continue? (y/N): {Colors.ENDC}").strip().lower()
-            if confirm == 'y':
-                run_script("dataforseo_collection.py", "DataForSEO API Collection")
-            else:
-                print_info("Cancelled.")
-
-        elif choice == "3":
-            run_script("geo_analyzer.py", "GEO JSON-LD Analysis")
-
-        elif choice == "4":
-            run_script("google_integration.py", "Google Data Integration")
-
-        elif choice == "5":
-            run_script("llm_runner.py", "LLM Strategic Analysis")
-
-        elif choice == "6":
-            run_script("performance_check.py", "Performance Analysis")
-
-        elif choice == "7":
-            if check_prerequisites("7"):
-                if os.path.exists("generate_report.py"):
-                    run_script("generate_report.py", "HTML Report Generation")
-                else:
-                    print_error("Report generator script not found!")
-                    print_info("The report generator needs to be created from analyze_and_generate_report.py")
-            else:
-                print_error("Prerequisites not met. Please run required steps first.")
-
-        elif choice == "7":
-            run_script("export_data.py", "Export Data to CSV/Excel/PDF")
-
-        else:
-            print_error("Invalid option. Please try again.")
 
         input(f"\n{Colors.CYAN}Press Enter to continue...{Colors.ENDC}")
         print("\n" * 2)
