@@ -16,7 +16,9 @@ Date: December 7, 2025
 
 import json
 import os
+import re
 from datetime import datetime
+from urllib.parse import urlparse
 
 from utils.path_manager import get_current_project_path, get_latest_file
 
@@ -32,6 +34,37 @@ SECTION_ORDER = [
 MAX_LINKS_PER_SECTION = 15
 
 
+def _safe_link_url(url):
+    """Return a clean http(s) URL safe to embed in a Markdown link, or None.
+
+    Sitemap URLs are externally controlled, so reject unsafe schemes (e.g.
+    ``javascript:``), control characters/whitespace, and parentheses that
+    would break Markdown link syntax.
+    """
+    if not url:
+        return None
+    url = str(url).strip()
+    if any((ord(c) < 0x20) or c.isspace() for c in url):
+        return None
+    if "(" in url or ")" in url:
+        return None
+    parsed = urlparse(url)
+    if parsed.scheme not in {"http", "https"} or not parsed.netloc:
+        return None
+    return url
+
+
+def _safe_filename_stem(domain):
+    """Confine a domain-derived filename to the project directory.
+
+    Strips path separators and traversal so the output can only ever be
+    written inside the resolved reports directory.
+    """
+    stem = re.sub(r"[^A-Za-z0-9.-]", "_", str(domain or "").strip())
+    stem = stem.strip("._-")
+    return stem or "site"
+
+
 def _company_name(metadata):
     """Best-effort human name for the site."""
     domain = metadata.get("target_domain", "") or ""
@@ -44,8 +77,6 @@ def _company_name(metadata):
 
 def _link_label(url):
     """Derive a readable label from a URL path (slug -> Title Case)."""
-    from urllib.parse import urlparse
-
     path = urlparse(url).path.strip("/")
     if not path:
         return "Home"
@@ -87,11 +118,15 @@ def build_llms_txt(data):
         lines.append("")
 
     # Key pages: homepage first, then static/other pages.
+    # Every URL is validated because sitemap content is externally controlled.
     key_pages = []
-    if domain:
-        key_pages.append((f"https://{domain}/", "Home"))
+    home_url = _safe_link_url(f"https://{domain}/") if domain else None
+    if home_url:
+        key_pages.append((home_url, "Home"))
     for url in buckets.get("static", []) + buckets.get("other", []):
-        key_pages.append((url, _link_label(url)))
+        safe = _safe_link_url(url)
+        if safe:
+            key_pages.append((safe, _link_label(safe)))
     if key_pages:
         lines.append("## Key pages")
         for url, label in key_pages[:MAX_LINKS_PER_SECTION]:
@@ -100,7 +135,7 @@ def build_llms_txt(data):
 
     # Categorized sections.
     for type_key, title in SECTION_ORDER:
-        urls = buckets.get(type_key, [])
+        urls = [u for u in (_safe_link_url(x) for x in buckets.get(type_key, [])) if u]
         if not urls:
             continue
         lines.append(f"## {title}")
@@ -138,7 +173,10 @@ def main():
     content = build_llms_txt(data)
 
     domain = data.get("metadata", {}).get("target_domain", "site")
-    output_file = os.path.join(project_dir, f"{domain}-llms.txt")
+    # Confine the output strictly to the project directory (defense in depth
+    # against a domain value containing path separators or traversal).
+    filename = os.path.basename(f"{_safe_filename_stem(domain)}-llms.txt")
+    output_file = os.path.join(project_dir, filename)
     with open(output_file, "w") as f:
         f.write(content)
 
