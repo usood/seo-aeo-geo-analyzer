@@ -111,6 +111,7 @@ TARGET_DOMAIN = sitemap_data['metadata']['target_domain']
 COMPETITORS = sitemap_data['metadata']['competitors']
 COMPANY_NAME = sitemap_data['metadata'].get('company_name', TARGET_DOMAIN.split('.')[0].title())
 COMPANY_NAME_HTML = escape_html(COMPANY_NAME)
+BRANDING = sitemap_data['metadata'].get('branding', {})
 
 # Extract gap data from DataForSEO results
 gaps = dataforseo_data.get('gaps', {})
@@ -310,19 +311,18 @@ html = f"""<!DOCTYPE html>
             padding: 0;
             box-sizing: border-box;
         }}
-        
-        /* ... existing styles ... */
+
         :root {{
-            --primary: #f59e0b;
-            --primary-dark: #d97706;
-            --dark: #78350f;
-            --dark-light: #92400e;
-            --text-main: #1f2937;
-            --text-muted: #6b7280;
-            --glass-bg: rgba(255, 255, 255, 0.65);
-            --glass-border: rgba(255, 255, 255, 0.4);
-            --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
-            --sidebar-bg: rgba(120, 53, 15, 0.9);
+            --primary: {BRANDING.get('theme_color') or '#2563eb'};
+            --primary-dark: {BRANDING.get('theme_color') or '#1d4ed8'};
+            --dark: #0f172a;
+            --dark-light: #1e293b;
+            --text-main: #334155;
+            --text-muted: #64748b;
+            --glass-bg: rgba(255, 255, 255, 0.85);
+            --glass-border: rgba(226, 232, 240, 0.6);
+            --glass-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            --sidebar-bg: rgba(15, 23, 42, 0.98);
             --success: #10b981;
             --warning: #f59e0b;
             --danger: #ef4444;
@@ -336,7 +336,7 @@ html = f"""<!DOCTYPE html>
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
             line-height: 1.6;
             color: var(--text-main);
-            background: linear-gradient(135deg, #fdfbf7 0%, #fff7ed 50%, #fff1f2 100%);
+            background: linear-gradient(to bottom right, #f8fafc, #f1f5f9);
             background-attachment: fixed;
             min-height: 100vh;
         }}
@@ -387,8 +387,7 @@ html = f"""<!DOCTYPE html>
             opacity: 0.7;
             margin-top: 5px;
         }}
-        
-        /* ... rest of styles ... */
+
         .nav-section {{
             padding: 0 15px;
             margin-bottom: 25px;
@@ -603,7 +602,7 @@ html = f"""<!DOCTYPE html>
         }}
 
         .data-table th {{
-            background: rgba(120, 53, 15, 0.9);
+            background: var(--dark);
             color: white;
             padding: 20px;
             text-align: left;
@@ -782,7 +781,10 @@ html = f"""<!DOCTYPE html>
 <body>
     <nav class="sidebar">
         <div class="sidebar-header">
-            <div class="sidebar-logo">🐾 {COMPANY_NAME_HTML}</div>
+            <div class="sidebar-logo">
+                {f'<img src="{escape_html(BRANDING.get("logo_url"))}" alt="{COMPANY_NAME_HTML}" style="height: 40px; width: auto; border-radius: 8px;">' if BRANDING.get("logo_url") else '<span style="font-size: 1.5em;">🐾</span>'}
+                <span style="margin-left: 10px;">{COMPANY_NAME_HTML}</span>
+            </div>
             <div class="sidebar-subtitle">SEO Analysis Report</div>
         </div>
 
@@ -915,6 +917,56 @@ html += f"""
                         <div class="stat-label">Product/Transactional Gaps</div>
                     </div>
                 </div>
+
+"""
+# Competitor Landscape Table
+competitor_rows = ""
+all_domains_list = [TARGET_DOMAIN] + list(COMPETITORS.keys())
+
+for domain in all_domains_list:
+    # Safe extraction of metrics
+    dm = dataforseo_data.get('domain_metrics', {}).get(domain, {})
+    metrics = dm.get('metrics', {}).get('organic', {})
+    
+    kw_count = metrics.get('count', 0)
+    etv = metrics.get('etv', 0)
+    
+    bl = dataforseo_data.get('backlinks', {}).get(domain, {})
+    ref_domains = bl.get('referring_domains', 0)
+    
+    # Styling
+    is_target = (domain == TARGET_DOMAIN)
+    row_style = "background: linear-gradient(90deg, rgba(245, 158, 11, 0.1), transparent);" if is_target else ""
+    name_style = "font-weight: 700; color: var(--primary-dark);" if is_target else "font-weight: 600;"
+    domain_display = f"{domain} (You)" if is_target else domain
+    
+    competitor_rows += f"""
+                        <tr style="{row_style}">
+                            <td><span style="{name_style}">{domain_display}</span></td>
+                            <td>{kw_count:,}</td>
+                            <td>${etv:,.2f}</td>
+                            <td>{ref_domains:,}</td>
+                        </tr>"""
+
+html += f"""
+                <h3 style="margin: 40px 0 20px; color: var(--dark);">Competitor Landscape</h3>
+                <div class="insight-box">
+                    <h3>📊 Market Position</h3>
+                    <p>Comparison of organic search visibility and authority metrics against key competitors.</p>
+                </div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Domain</th>
+                            <th>Organic Keywords</th>
+                            <th>Est. Traffic Value (Monthly)</th>
+                            <th>Referring Domains</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {competitor_rows}
+                    </tbody>
+                </table>
 
                 <!-- Focused Action Plan -->
                 <div style="background: white; border-radius: 16px; padding: 30px; margin-top: 40px; box-shadow: 0 4px 20px rgba(0,0,0,0.08);">
