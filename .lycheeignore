@@ -1,0 +1,11 @@
+# Placeholder / example domains used throughout docs and example configs.
+# These are illustrative, not real, so the link checker must skip them.
+https?://(www\.)?yourdomain\.com.*
+https?://(www\.)?example\.com.*
+https?://(www\.)?competitor[0-9]*\.com.*
+https?://(www\.)?yourbrand\.com.*
+https?://(www\.)?yoursite\.com.*
+https?://localhost.*
+https?://127\.0\.0\.1.*
+# Shields.io / badge endpoints can rate-limit on CI; not worth failing a PR over.
+https?://img\.shields\.io.*
