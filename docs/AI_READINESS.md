@@ -96,6 +96,15 @@ Useful signals to track:
 
 Use these signals as engineering feedback, not as a confirmed search ranking factor.
 
+### Agentic-browsing checker
+
+`agentic_browsing_check.py` (step 11) runs the **local** Lighthouse CLI for the `agentic-browsing` category against the site's homepage and writes `agentic_browsing.json`. It is designed to degrade gracefully:
+
+- If Lighthouse is not installed, Chrome cannot launch, the run times out, or the installed Lighthouse version does not expose the category, it records `available: false` with a clear reason instead of failing.
+- When the category is available, it captures the category score (often pass/fail rather than 0-100) and per-audit readiness signals.
+
+Results are surfaced in the HTML report as an "Agentic Browsing" section (with the graceful "not available" state shown when the runtime lacks the category).
+
 Source:
 
 - [Chrome for Developers: Lighthouse agentic browsing scoring](https://developer.chrome.com/docs/lighthouse/agentic-browsing/scoring)
@@ -104,6 +113,6 @@ Source:
 
 - Add a crawler check for root `llms.txt` presence and freshness.
 - ~~Add a WebMCP opportunity detector for action-oriented site flows.~~ Done (`webmcp_analyzer.py`).
-- Add Lighthouse agentic browsing results to performance reports when the category is available in the local Lighthouse runtime.
+- ~~Add Lighthouse agentic browsing results to performance reports when the category is available in the local Lighthouse runtime.~~ Done (`agentic_browsing_check.py`).
 - Add accessibility-tree checks that matter for both humans and agents.
 - Add ecommerce and local business checks for Merchant Center, product feeds, Product schema, Organization schema, and Google Business Profile readiness.

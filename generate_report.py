@@ -93,6 +93,16 @@ else:
     webmcp_data = None
     print("ℹ WebMCP analysis not found (optional). Run webmcp_analyzer.py to include it.")
 
+# Load Lighthouse agentic-browsing results (optional)
+agentic_file = os.path.join(project_dir, "agentic_browsing.json")
+if os.path.exists(agentic_file):
+    with open(agentic_file, 'r') as f:
+        agentic_data = json.load(f)
+    print(f"✓ Loaded: {agentic_file}")
+else:
+    agentic_data = None
+    print("ℹ Agentic-browsing results not found (optional). Run agentic_browsing_check.py to include them.")
+
 # ============================================================================
 # PROCESS DATA
 # ============================================================================
@@ -228,6 +238,60 @@ if webmcp_data:
                     <h3>Notes</h3>
                     <ul style="line-height:1.9; color:var(--gray-700);">{_wm_notes}</ul>
                 </div>
+            </section>
+"""
+
+# ----------------------------------------------------------------------------
+# Lighthouse agentic-browsing (optional): rendered when the check has run.
+# Falls back to a clear "not available" card when the local runtime lacked it.
+# ----------------------------------------------------------------------------
+agentic_nav = ""
+agentic_section = ""
+if agentic_data:
+    agentic_nav = (
+        '<a href="#agentic" class="nav-item" data-section="agentic">'
+        '<span class="nav-icon">🧭</span><span>Agentic Browsing</span></a>'
+    )
+    _ag_url = safe_http_url(agentic_data.get("url", ""))
+    if agentic_data.get("available"):
+        _ag_score = agentic_data.get("score")
+        _ag_score_txt = escape_html(f"{_ag_score}" if _ag_score is not None else "Pass/fail signals")
+        _ag_ver = escape_html(agentic_data.get("lighthouse_version", "unknown"))
+        _ag_rows = ""
+        for _s in agentic_data.get("signals", []):
+            _t = escape_html(_s.get("title") or _s.get("id") or "Signal")
+            _sc = _s.get("score")
+            _disp = escape_html(_s.get("displayValue") or ("pass" if _sc == 1 else "fail" if _sc == 0 else "info"))
+            _ag_rows += (
+                '<div style="display:flex; justify-content:space-between; gap:12px; '
+                'padding:10px 12px; background:var(--gray-50); border-radius:8px; margin-bottom:8px;">'
+                f'<span style="color:var(--gray-700);">{_t}</span>'
+                f'<span style="color:var(--gray-600); white-space:nowrap;">{_disp}</span></div>'
+            )
+        if not _ag_rows:
+            _ag_rows = '<div style="color:var(--gray-600);">No individual audit signals reported.</div>'
+        _ag_body = f"""
+                <div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); margin-bottom:24px;">
+                    <div class="stat-card"><div class="stat-label">Category result</div><div class="stat-value">{_ag_score_txt}</div></div>
+                    <div class="stat-card" style="text-align:left;"><div class="stat-label">Audited URL</div><div style="margin-top:6px;"><a href="{_ag_url}" target="_blank" rel="noopener noreferrer" style="color:var(--primary); word-break:break-all;">{_ag_url}</a></div></div>
+                    <div class="stat-card"><div class="stat-label">Lighthouse</div><div class="stat-value" style="font-size:1.1em;">v{_ag_ver}</div></div>
+                </div>
+                <h3 style="margin-bottom:12px;">Readiness signals</h3>
+                {_ag_rows}"""
+    else:
+        _ag_reason = escape_html(agentic_data.get("reason", "Not available."))
+        _ag_body = f"""
+                <div class="insight-box">
+                    <h3>ℹ️ Agentic-browsing category not available</h3>
+                    <p>{_ag_reason}</p>
+                    <p style="margin-top:8px; color:var(--gray-600);">This is expected unless a recent local Lighthouse runtime exposes the experimental category. Install/upgrade Lighthouse and re-run step 11 to populate this section.</p>
+                </div>"""
+
+    agentic_section = f"""
+            <section id="agentic" class="section">
+                <h2 class="section-title"><span class="icon">🧭</span> Agentic Browsing (Lighthouse)</h2>
+                <p style="color:var(--gray-600); margin-bottom:20px;">Experimental Lighthouse category measuring readiness for AI agents (WebMCP tools, agent accessibility, layout stability, llms.txt). Treat as engineering signals, not a ranking score.</p>
+                {_ag_body}
             </section>
 """
 
@@ -781,6 +845,7 @@ html = f"""<!DOCTYPE html>
                 <span>Performance</span>
             </a>
             {webmcp_nav}
+            {agentic_nav}
         </div>
     </nav>
 
@@ -1916,6 +1981,9 @@ else:
 
 # WebMCP readiness section (optional; empty string when not analyzed)
 html += webmcp_section
+
+# Agentic-browsing section (optional; empty string when not run)
+html += agentic_section
 
 # Recommendations section (Merged into Executive Summary)
 if False:
