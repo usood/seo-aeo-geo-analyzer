@@ -72,6 +72,12 @@ Implementation caveats:
 - Chrome currently documents origin isolation and Permissions Policy requirements for WebMCP APIs.
 - WebMCP is a progressive enhancement; the human-facing UI still needs to work normally.
 
+### WebMCP opportunity analyzer
+
+`webmcp_analyzer.py` (step 10) implements a first-pass opportunity detector. It is heuristic and offline (no API cost): it scans the collected sitemap sample for action-oriented URL patterns (checkout/cart, signup, booking, lead/enquiry forms, account/dashboard, search, support) and infers commerce flows from detected technology (e.g. Shopify implies checkout/cart even when those pages are absent from the sitemap). It writes `webmcp_analysis.json` and surfaces a score, level, and flagged pages in the HTML report.
+
+Because action pages such as checkout and login are frequently excluded from sitemaps, treat the score as a floor on real opportunity, not a ceiling.
+
 Sources:
 
 - [Chrome for Developers: WebMCP](https://developer.chrome.com/docs/ai/webmcp)
@@ -97,7 +103,7 @@ Source:
 ## Future Analyzer Enhancements
 
 - Add a crawler check for root `llms.txt` presence and freshness.
-- Add a WebMCP opportunity detector for action-oriented site flows.
+- ~~Add a WebMCP opportunity detector for action-oriented site flows.~~ Done (`webmcp_analyzer.py`).
 - Add Lighthouse agentic browsing results to performance reports when the category is available in the local Lighthouse runtime.
 - Add accessibility-tree checks that matter for both humans and agents.
 - Add ecommerce and local business checks for Merchant Center, product feeds, Product schema, Organization schema, and Google Business Profile readiness.

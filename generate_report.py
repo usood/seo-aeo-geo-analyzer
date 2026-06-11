@@ -83,6 +83,16 @@ else:
     performance_data = None
     print("⚠ Performance data not found. Run performance_check.py first.")
 
+# Load WebMCP opportunity analysis (optional)
+webmcp_file = os.path.join(project_dir, "webmcp_analysis.json")
+if os.path.exists(webmcp_file):
+    with open(webmcp_file, 'r') as f:
+        webmcp_data = json.load(f)
+    print(f"✓ Loaded: {webmcp_file}")
+else:
+    webmcp_data = None
+    print("ℹ WebMCP analysis not found (optional). Run webmcp_analyzer.py to include it.")
+
 # ============================================================================
 # PROCESS DATA
 # ============================================================================
@@ -159,6 +169,67 @@ for category in categorized_gaps:
 
 total_gaps = len(top_100_gaps)
 report_date = datetime.now().strftime('%B %d, %Y')
+
+# ----------------------------------------------------------------------------
+# WebMCP opportunity (optional): only rendered when webmcp_analyzer.py has run.
+# All values originate from sitemap-derived data, so everything is escaped.
+# ----------------------------------------------------------------------------
+webmcp_nav = ""
+webmcp_section = ""
+if webmcp_data:
+    _wm_level = escape_html(webmcp_data.get("level", "Unknown"))
+    _wm_score = int(webmcp_data.get("score", 0) or 0)
+    _wm_cats = escape_html(", ".join(webmcp_data.get("present_categories", [])) or "None detected")
+
+    webmcp_nav = (
+        '<a href="#webmcp" class="nav-item" data-section="webmcp">'
+        '<span class="nav-icon">🧩</span><span>WebMCP Readiness</span></a>'
+    )
+
+    _wm_rows = ""
+    for _p in webmcp_data.get("flagged_pages", []):
+        _u = safe_http_url(_p.get("url", ""))
+        if not _u:
+            continue
+        _cats = escape_html(", ".join(_p.get("categories", [])))
+        _wm_rows += (
+            '<div style="display:flex; justify-content:space-between; gap:12px; '
+            'padding:10px 12px; background:var(--gray-50); border-radius:8px; '
+            'border-left:4px solid var(--primary); margin-bottom:8px;">'
+            f'<a href="{_u}" target="_blank" rel="noopener noreferrer" '
+            f'style="color:var(--primary); word-break:break-all;">{_u}</a>'
+            f'<span style="color:var(--gray-600); white-space:nowrap;">{_cats}</span></div>'
+        )
+    if not _wm_rows:
+        _wm_rows = (
+            '<div style="padding:16px; text-align:center; color:var(--gray-600); '
+            'background:var(--gray-50); border-radius:8px;">No action-oriented pages '
+            'found in the sitemap sample. Action pages (checkout, login) are often '
+            'excluded from sitemaps, so review manually.</div>'
+        )
+
+    _wm_flows = "".join(f"<li>{escape_html(x)}</li>" for x in webmcp_data.get("inferred_flows", []))
+    _wm_flows_block = f'<ul style="line-height:1.9; color:var(--gray-700);">{_wm_flows}</ul>' if _wm_flows else ""
+    _wm_notes = "".join(f"<li>{escape_html(x)}</li>" for x in webmcp_data.get("notes", []))
+
+    webmcp_section = f"""
+            <section id="webmcp" class="section">
+                <h2 class="section-title"><span class="icon">🧩</span> WebMCP Readiness</h2>
+                <p style="color:var(--gray-600); margin-bottom:20px;">WebMCP is a proposed Chrome standard for exposing structured browser tools to AI agents. This flags action-oriented flows where exposing such tools would most improve agent reliability.</p>
+                <div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); margin-bottom:24px;">
+                    <div class="stat-card"><div class="stat-label">Opportunity</div><div class="stat-value">{_wm_level}</div></div>
+                    <div class="stat-card"><div class="stat-label">Score</div><div class="stat-value">{_wm_score}/100</div></div>
+                    <div class="stat-card" style="text-align:left;"><div class="stat-label">Flows present</div><div style="margin-top:6px; color:var(--gray-700);">{_wm_cats}</div></div>
+                </div>
+                <h3 style="margin-bottom:12px;">Flagged action-oriented pages</h3>
+                {_wm_rows}
+                {_wm_flows_block}
+                <div class="insight-box" style="margin-top:20px;">
+                    <h3>Notes</h3>
+                    <ul style="line-height:1.9; color:var(--gray-700);">{_wm_notes}</ul>
+                </div>
+            </section>
+"""
 
 html = f"""<!DOCTYPE html>
 <html lang="en">
@@ -709,6 +780,7 @@ html = f"""<!DOCTYPE html>
                 <span class="nav-icon">⚡</span>
                 <span>Performance</span>
             </a>
+            {webmcp_nav}
         </div>
     </nav>
 
@@ -1841,6 +1913,9 @@ else:
                 </div>
             </section>
 """
+
+# WebMCP readiness section (optional; empty string when not analyzed)
+html += webmcp_section
 
 # Recommendations section (Merged into Executive Summary)
 if False:
