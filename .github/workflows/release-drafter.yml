@@ -18,12 +18,13 @@ jobs:
       contents: write # create/update the draft release
       pull-requests: write # apply autolabels
     runs-on: ubuntu-latest
-    # Release-notes automation must never block a PR. The config is only read
-    # from the default branch, so this is a no-op until the workflow lands on
-    # main; tolerate that (and any transient API hiccup) gracefully.
-    continue-on-error: true
     steps:
+      # Release-notes automation must never block a PR. The config is only read
+      # from the default branch, so this is a no-op until the workflow lands on
+      # main; tolerate that (and any transient API hiccup) gracefully so the
+      # check still reports green.
       - uses: release-drafter/release-drafter@v6
+        continue-on-error: true
         with:
           config-name: release-drafter.yml
         env:
