@@ -1,0 +1,43 @@
+name-template: "v$RESOLVED_VERSION"
+tag-template: "v$RESOLVED_VERSION"
+categories:
+  - title: "🚀 Features"
+    labels: ["feature", "enhancement"]
+  - title: "🐛 Bug Fixes"
+    labels: ["fix", "bug"]
+  - title: "🧰 Maintenance & CI"
+    labels: ["chore", "ci", "dependencies", "maintenance"]
+  - title: "📖 Documentation"
+    labels: ["docs", "documentation"]
+change-template: "- $TITLE (#$NUMBER) @$AUTHOR"
+change-title-escapes: '\<*_&'
+version-resolver:
+  major:
+    labels: ["major", "breaking"]
+  minor:
+    labels: ["minor", "feature", "enhancement"]
+  patch:
+    labels: ["patch", "fix", "bug", "chore", "ci", "docs", "dependencies"]
+  default: patch
+# Lightweight autolabeling so categorization works without manual labels.
+autolabeler:
+  - label: "ci"
+    title: ["/^ci(\\(.+\\))?:/i"]
+    branch: ["/^(ci|fix\\/ci)\\//"]
+  - label: "fix"
+    title: ["/^fix(\\(.+\\))?:/i"]
+    branch: ["/^fix\\//"]
+  - label: "feature"
+    title: ["/^feat(\\(.+\\))?:/i"]
+    branch: ["/^feat\\//"]
+  - label: "docs"
+    title: ["/^docs(\\(.+\\))?:/i"]
+    branch: ["/^docs\\//"]
+  - label: "chore"
+    title: ["/^chore(\\(.+\\))?:/i"]
+template: |
+  ## What's Changed
+
+  $CHANGES
+
+  **Full Changelog**: https://github.com/usood/seo-aeo-geo-analyzer/compare/$PREVIOUS_TAG...v$RESOLVED_VERSION

@@ -1,0 +1,31 @@
+name: Release Drafter
+
+# Keeps a draft release continuously updated from merged PRs, and applies
+# lightweight category labels to PRs. Maintainers publish the draft when
+# they're ready to cut a version.
+on:
+  push:
+    branches: [main]
+  pull_request:
+    types: [opened, reopened, synchronize]
+
+permissions:
+  contents: read
+
+jobs:
+  update_release_draft:
+    permissions:
+      contents: write # create/update the draft release
+      pull-requests: write # apply autolabels
+    runs-on: ubuntu-latest
+    steps:
+      # Release-notes automation must never block a PR. The config is only read
+      # from the default branch, so this is a no-op until the workflow lands on
+      # main; tolerate that (and any transient API hiccup) gracefully so the
+      # check still reports green.
+      - uses: release-drafter/release-drafter@v6
+        continue-on-error: true
+        with:
+          config-name: release-drafter.yml
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
