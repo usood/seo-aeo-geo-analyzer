@@ -33,6 +33,23 @@ Each capability maps to an SEO/AEO/GEO aspect, with _why it matters_ called out 
 - **🎨 Beautiful HTML Reports** - Interactive, sortable data tables
 - **📤 Data Export** - Export analysis data to CSV, Excel, and PDF formats
 
+## Who This Is For
+
+This tool is useful when you need a repeatable SEO/AEO/GEO audit without building a custom data pipeline from scratch.
+
+- **SEO agencies and consultants** can use it to produce client-ready audits, benchmark competitors, and turn discovery work into prioritized implementation plans.
+- **Content and growth teams** can use it to find keyword gaps, content gaps, product-page opportunities, and AI-search visibility issues.
+- **DTC and ecommerce brands** can use it to identify product, collection, comparison, and buying-guide opportunities competitors already rank for.
+- **B2B SaaS companies** can use it to discover bottom-of-funnel topics, category-page gaps, competitor positioning, and technical SEO issues.
+- **Consumer apps and marketplaces** can use it to map high-intent acquisition queries, landing-page gaps, and performance issues across key flows.
+- **Developers and technical marketers** can use it as an extensible base for scheduled audits, custom report sections, WebMCP checks, `llms.txt`, and agentic-browser readiness.
+
+## Done-For-You Implementation
+
+This repository is the open-source analyzer. If you want the audit findings implemented for you, [Snezzi](https://snezzi.com) can help with the done-for-you layer: technical SEO fixes, content plans, programmatic SEO workflows, AI-search readiness, `llms.txt`, WebMCP planning, and recurring reporting.
+
+The open-source project remains useful on its own; Snezzi is the service option for teams that want execution and ongoing maintenance handled end to end.
+
 ## Quick Start
 
 ### 1. Installation
