@@ -111,6 +111,7 @@ def show_menu():
         ("6", "Performance Analysis", "performance_check.py", "~2-3 minutes"),
         ("7", "Generate HTML Report", "generate_report.py", "~5 seconds"),
         ("8", "Export Data (CSV/Excel/PDF)", "export_data.py", "~10 seconds"),
+        ("9", "Generate Site llms.txt (optional)", "generate_site_llms.py", "~5 seconds"),
         ("A", "Run ALL Steps (Complete Analysis)", "", "~25-35 minutes total"),
         ("Q", "Quit", "", "")
     ]
@@ -216,7 +217,8 @@ def show_status():
         ("dataforseo_final_*.json", "DataForSEO Complete Data", "Step 2"),
         ("geo_analysis.json", "GEO Analysis", "Step 3"),
         ("performance_analysis.json", "Performance Data", "Step 6"),
-        ("*-seo-audit-*.html", "HTML Report", "Step 7")
+        ("*-seo-audit-*.html", "HTML Report", "Step 7"),
+        ("*-llms.txt", "Site llms.txt (optional)", "Step 9")
     ]
 
     for pattern, description, step in files_to_check:
@@ -285,6 +287,9 @@ def handle_choice(choice):
 
     elif choice == "8":
         run_script("export_data.py", "Export Data to CSV/Excel/PDF")
+
+    elif choice == "9":
+        run_script("generate_site_llms.py", "Generate Site llms.txt")
 
     else:
         print_error("Invalid option. Please try again.")

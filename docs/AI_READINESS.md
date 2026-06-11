@@ -39,6 +39,18 @@ Use `llms.txt` carefully:
 - Link to canonical docs instead of duplicating long documentation.
 - Update it when entry points, tests, or maintenance policies change.
 
+### Generating an llms.txt for an analyzed site
+
+The analyzer can also generate a recommended `llms.txt` **for the site being audited** (not for this repository). Run step 9 in `run_analysis.py`, or:
+
+```bash
+python generate_site_llms.py
+```
+
+This reads the latest sitemap analysis (`analysis_data_*.json`) and writes `reports/<project>/<domain>-llms.txt`, a short curated index of the site's canonical entry points grouped by type (key pages, products/services, categories, content). To use it, host the file at `https://<domain>/llms.txt`.
+
+The same caveats apply: it is optional, is **not** a Google Search requirement, and does not affect ranking. It exists to help AI agents and LLM tools discover a site's most important pages.
+
 Source:
 
 - [llms.txt proposal](https://llmstxt.org/)
