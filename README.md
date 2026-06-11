@@ -88,7 +88,21 @@ location:
 branding:
   primary_color: "#3b82f6"
   logo_emoji: "🚀"
+
+report:
+  language: "en" # UI labels only; keywords, URLs, metrics, and AI text stay unchanged.
 ```
+
+### Report Languages
+
+Report UI labels are deterministic and free to render. Set `report.language` in `config.yaml`; if it is omitted, the report falls back to `location.language_code`, then English.
+
+Supported starter locales:
+
+- `en` - English
+- `es` - Spanish
+
+To add a language, copy [locales/en.json](locales/en.json), translate the values, save it as `locales/<language>.json`, and open a PR. Locale files can be partial; missing labels fall back to English.
 
 ### Example Configurations
 
@@ -284,7 +298,7 @@ Built with:
 
 ## Roadmap
 
-- [ ] Multi-language support for reports
+- [x] Multi-language support for report UI labels
 - [x] Export to CSV/Excel/PDF
 - [x] Integration with Google Search Console
 - [x] Agentic browsing readiness checks

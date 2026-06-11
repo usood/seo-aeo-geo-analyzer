@@ -46,6 +46,7 @@ seed_keywords:
 report:
   company_name: "Asana"
   report_title: "B2B SEO Gap Analysis"
+  language: "en"
   author: "Marketing Team"
   include_sections:
     - executive_summary

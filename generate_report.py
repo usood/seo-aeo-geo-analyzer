@@ -13,6 +13,7 @@ from datetime import datetime
 from utils.path_manager import get_current_project_path, get_latest_file
 from utils.config_loader import load_config # Assuming config_loader is moved to utils
 from utils.html_safety import escape_html, safe_css_class, safe_http_url
+from utils.i18n import load_locale, resolve_report_language
 
 # ============================================================================
 # LOAD DATA FILES
@@ -113,6 +114,14 @@ COMPANY_NAME = sitemap_data['metadata'].get('company_name', TARGET_DOMAIN.split(
 COMPANY_NAME_HTML = escape_html(COMPANY_NAME)
 BRANDING = sitemap_data['metadata'].get('branding', {})
 
+if os.path.exists("config.yaml"):
+    REPORT_LANGUAGE = resolve_report_language(load_config())
+else:
+    REPORT_LANGUAGE = sitemap_data.get('metadata', {}).get('language', 'en')
+
+I18N = load_locale(REPORT_LANGUAGE)
+t = I18N.t
+
 # Extract gap data from DataForSEO results
 gaps = dataforseo_data.get('gaps', {})
 top_100_gaps = gaps.get('top_100', [])
@@ -194,7 +203,7 @@ if webmcp_data:
 
     webmcp_nav = (
         '<a href="#webmcp" class="nav-item" data-section="webmcp">'
-        '<span class="nav-icon">🧩</span><span>WebMCP Readiness</span></a>'
+        f'<span class="nav-icon">🧩</span><span>{t("report.nav.webmcp_readiness")}</span></a>'
     )
 
     _wm_rows = ""
@@ -225,7 +234,7 @@ if webmcp_data:
 
     webmcp_section = f"""
             <section id="webmcp" class="section">
-                <h2 class="section-title"><span class="icon">🧩</span> WebMCP Readiness</h2>
+                <h2 class="section-title"><span class="icon">🧩</span> {t("report.webmcp.title")}</h2>
                 <p style="color:var(--gray-600); margin-bottom:20px;">WebMCP is a proposed Chrome standard for exposing structured browser tools to AI agents. This flags action-oriented flows where exposing such tools would most improve agent reliability.</p>
                 <div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); margin-bottom:24px;">
                     <div class="stat-card"><div class="stat-label">Opportunity</div><div class="stat-value">{_wm_level}</div></div>
@@ -251,7 +260,7 @@ agentic_section = ""
 if agentic_data:
     agentic_nav = (
         '<a href="#agentic" class="nav-item" data-section="agentic">'
-        '<span class="nav-icon">🧭</span><span>Agentic Browsing</span></a>'
+        f'<span class="nav-icon">🧭</span><span>{t("report.nav.agentic_browsing")}</span></a>'
     )
     _ag_url = safe_http_url(agentic_data.get("url", ""))
     if agentic_data.get("available"):
@@ -290,19 +299,19 @@ if agentic_data:
 
     agentic_section = f"""
             <section id="agentic" class="section">
-                <h2 class="section-title"><span class="icon">🧭</span> Agentic Browsing (Lighthouse)</h2>
+                <h2 class="section-title"><span class="icon">🧭</span> {t("report.agentic.title")} (Lighthouse)</h2>
                 <p style="color:var(--gray-600); margin-bottom:20px;">Experimental Lighthouse category measuring readiness for AI agents (WebMCP tools, agent accessibility, layout stability, llms.txt). Treat as engineering signals, not a ranking score.</p>
                 {_ag_body}
             </section>
 """
 
 html = f"""<!DOCTYPE html>
-<html lang="en">
+<html lang="{I18N.language}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="noindex, nofollow">
-    <title>SEO Analysis Report | {COMPANY_NAME_HTML} | {report_date}</title>
+    <title>{t("report.title")} | {COMPANY_NAME_HTML} | {report_date}</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500;600;700;800&display=swap');
 
@@ -785,22 +794,22 @@ html = f"""<!DOCTYPE html>
                 {f'<img src="{escape_html(BRANDING.get("logo_url"))}" alt="{COMPANY_NAME_HTML}" style="height: 40px; width: auto; border-radius: 8px;">' if BRANDING.get("logo_url") else '<span style="font-size: 1.5em;">🐾</span>'}
                 <span style="margin-left: 10px;">{COMPANY_NAME_HTML}</span>
             </div>
-            <div class="sidebar-subtitle">SEO Analysis Report</div>
+            <div class="sidebar-subtitle">{t("report.subtitle")}</div>
         </div>
 
         <div class="nav-section">
             <div class="nav-section-title">Overview</div>
             <a href="#executive-summary" class="nav-item active" data-section="executive-summary">
                 <span class="nav-icon">📊</span>
-                <span>Executive Summary</span>
+                <span>{t("report.nav.executive_summary")}</span>
             </a>
             <a href="#sitemap" class="nav-item" data-section="sitemap">
                 <span class="nav-icon">🗺️</span>
-                <span>Sitemap Analysis</span>
+                <span>{t("report.nav.sitemap")}</span>
             </a>
             <a href="#social" class="nav-item" data-section="social">
                 <span class="nav-icon">📱</span>
-                <span>Social Presence</span>
+                <span>{t("report.nav.social")}</span>
             </a>
             <a href="#local-intl" class="nav-item" data-section="local-intl">
                 <span class="nav-icon">🌍</span>
@@ -812,22 +821,22 @@ html = f"""<!DOCTYPE html>
             <div class="nav-section-title">Keyword Gaps</div>
             <a href="#high-opportunity" class="nav-item" data-section="high-opportunity">
                 <span class="nav-icon">🎯</span>
-                <span>High-Opportunity</span>
+                <span>{t("report.nav.high_opportunity")}</span>
                 <span class="nav-badge critical">{len(categorized_gaps['high_opportunity'])}</span>
             </a>
             <a href="#quick-wins" class="nav-item" data-section="quick-wins">
                 <span class="nav-icon">⚡</span>
-                <span>Quick Wins</span>
+                <span>{t("report.nav.quick_wins")}</span>
                 <span class="nav-badge">{len(categorized_gaps['quick_wins'])}</span>
             </a>
             <a href="#content-gaps" class="nav-item" data-section="content-gaps">
                 <span class="nav-icon">📝</span>
-                <span>Content Gaps</span>
+                <span>{t("report.nav.content_gaps")}</span>
                 <span class="nav-badge">{len(categorized_gaps['content_gaps'])}</span>
             </a>
             <a href="#product-gaps" class="nav-item" data-section="product-gaps">
                 <span class="nav-icon">🛒</span>
-                <span>Product Gaps</span>
+                <span>{t("report.nav.product_gaps")}</span>
                 <span class="nav-badge">{len(categorized_gaps['product_gaps'])}</span>
             </a>
         </div>
@@ -836,15 +845,15 @@ html = f"""<!DOCTYPE html>
             <div class="nav-section-title">Technical SEO</div>
             <a href="#geo" class="nav-item" data-section="geo">
                 <span class="nav-icon">🤖</span>
-                <span>GEO (AI Visibility)</span>
+                <span>{t("report.nav.geo_optimization")}</span>
             </a>
             <a href="#google-data" class="nav-item" data-section="google-data">
                 <span class="nav-icon">📈</span>
-                <span>Google Search & GA4</span>
+                <span>{t("report.nav.google_data")}</span>
             </a>
             <a href="#performance" class="nav-item" data-section="performance">
                 <span class="nav-icon">⚡</span>
-                <span>Performance</span>
+                <span>{t("report.nav.performance")}</span>
             </a>
             {webmcp_nav}
             {agentic_nav}
@@ -855,7 +864,7 @@ html = f"""<!DOCTYPE html>
         <header class="header">
             <div class="header-top">
                 <div>
-                    <h1>SEO Analysis Report</h1>
+                    <h1>{t("report.title")}</h1>
                     <p class="date">{COMPANY_NAME_HTML} • {report_date} • India Market</p>
                 </div>
                 <div class="score-card">
@@ -869,7 +878,7 @@ html = f"""<!DOCTYPE html>
         <div class="content">
             <!-- Executive Summary -->
             <section id="executive-summary" class="section active">
-                <h2 class="section-title"><span class="icon">📊</span> Executive Summary</h2>
+                <h2 class="section-title"><span class="icon">📊</span> {t("report.section.executive_summary")}</h2>
 
                 <div class="insight-box">
                     <h3>🎯 Key Finding</h3>
@@ -1037,7 +1046,7 @@ if google_data and google_data.get('gsc', {}).get('optimization_needed'):
                                     <span style="font-size: 0.8em; font-weight: 600; color: var(--danger); white-space: nowrap; margin-top: 2px;">{metric_html}</span>
                                 </div>"""
 else:
-    html += """<div style="padding: 20px; text-align: center; color: var(--gray-600); background: var(--gray-50); border-radius: 8px;">No urgent fixes detected via GSC.</div>"""
+    html += f"""<div style="padding: 20px; text-align: center; color: var(--gray-600); background: var(--gray-50); border-radius: 8px;">{t("report.empty.no_urgent_fixes")}</div>"""
 
 html += """                            </div>
                         </div>
@@ -1207,7 +1216,7 @@ total_urls = site_data.get('total_urls', 0)
 html += f"""
             <!-- Sitemap Analysis -->
             <section id="sitemap" class="section">
-                <h2 class="section-title"><span class="icon">🗺️</span> Sitemap Analysis</h2>
+                <h2 class="section-title"><span class="icon">🗺️</span> {t("report.section.sitemap")}</h2>
 
                 <div class="stats-grid">
                     <div class="stat-card">
@@ -1284,10 +1293,10 @@ social_platforms = {
     'reddit': {'name': 'Reddit', 'icon': '🤖'},
 }
 
-html += """
+html += f"""
             <!-- Social Presence -->
             <section id="social" class="section">
-                <h2 class="section-title"><span class="icon">📱</span> Social Media Presence</h2>
+                <h2 class="section-title"><span class="icon">📱</span> {t("report.section.social")}</h2>
 
                 <div class="social-grid">
 """
@@ -1406,7 +1415,7 @@ html += f"""
 html += f"""
             <!-- High-Opportunity Keywords -->
             <section id="high-opportunity" class="section">
-                <h2 class="section-title"><span class="icon">🎯</span> High-Opportunity Keywords</h2>
+                <h2 class="section-title"><span class="icon">🎯</span> {t("report.section.high_opportunity")}</h2>
 
                 <div class="insight-box">
                     <h3>What are High-Opportunity Keywords?</h3>
@@ -1416,12 +1425,12 @@ html += f"""
                 <table class="data-table">
                     <thead>
                         <tr>
-                            <th onclick="sortTable(this, 0)">Keyword</th>
-                            <th onclick="sortTable(this, 1)">Search Volume</th>
-                            <th onclick="sortTable(this, 2)">Difficulty</th>
-                            <th onclick="sortTable(this, 3)">Intent</th>
-                            <th>Competitor</th>
-                            <th>Priority</th>
+                            <th onclick="sortTable(this, 0)">{t("report.table.keyword")}</th>
+                            <th onclick="sortTable(this, 1)">{t("report.table.search_volume")}</th>
+                            <th onclick="sortTable(this, 2)">{t("report.table.difficulty")}</th>
+                            <th onclick="sortTable(this, 3)">{t("report.table.intent")}</th>
+                            <th>{t("report.table.competitor")}</th>
+                            <th>{t("report.table.priority")}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -1464,7 +1473,7 @@ html += """                    </tbody>
 html += f"""
             <!-- Quick Wins -->
             <section id="quick-wins" class="section">
-                <h2 class="section-title"><span class="icon">⚡</span> Quick Win Opportunities</h2>
+                <h2 class="section-title"><span class="icon">⚡</span> {t("report.section.quick_wins")}</h2>
 
                 <div class="insight-box">
                     <h3>What are Quick Wins?</h3>
@@ -1474,11 +1483,11 @@ html += f"""
                 <table class="data-table">
                     <thead>
                         <tr>
-                            <th onclick="sortTable(this, 0)">Keyword</th>
-                            <th onclick="sortTable(this, 1)">Search Volume</th>
-                            <th onclick="sortTable(this, 2)">Difficulty</th>
-                            <th onclick="sortTable(this, 3)">Intent</th>
-                            <th>Suggested Action</th>
+                            <th onclick="sortTable(this, 0)">{t("report.table.keyword")}</th>
+                            <th onclick="sortTable(this, 1)">{t("report.table.search_volume")}</th>
+                            <th onclick="sortTable(this, 2)">{t("report.table.difficulty")}</th>
+                            <th onclick="sortTable(this, 3)">{t("report.table.intent")}</th>
+                            <th>{t("report.table.action")}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -1524,7 +1533,7 @@ html += """                    </tbody>
 html += f"""
             <!-- Content Gaps -->
             <section id="content-gaps" class="section">
-                <h2 class="section-title"><span class="icon">📝</span> Content Gap Opportunities</h2>
+                <h2 class="section-title"><span class="icon">📝</span> {t("report.section.content_gaps")}</h2>
 
                 <div class="insight-box">
                     <h3>What are Content Gaps?</h3>
@@ -1534,10 +1543,10 @@ html += f"""
                 <table class="data-table">
                     <thead>
                         <tr>
-                            <th onclick="sortTable(this, 0)">Keyword</th>
-                            <th onclick="sortTable(this, 1)">Search Volume</th>
-                            <th>Content Type Suggested</th>
-                            <th>Intent</th>
+                            <th onclick="sortTable(this, 0)">{t("report.table.keyword")}</th>
+                            <th onclick="sortTable(this, 1)">{t("report.table.search_volume")}</th>
+                            <th>{t("report.table.content_type")}</th>
+                            <th>{t("report.table.intent")}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -1583,7 +1592,7 @@ html += """                    </tbody>
 html += f"""
             <!-- Product Gaps -->
             <section id="product-gaps" class="section">
-                <h2 class="section-title"><span class="icon">🛒</span> Product/Transactional Keywords</h2>
+                <h2 class="section-title"><span class="icon">🛒</span> {t("report.section.product_gaps")}</h2>
 
                 <div class="insight-box">
                     <h3>What are Product Gaps?</h3>
@@ -1593,11 +1602,11 @@ html += f"""
                 <table class="data-table">
                     <thead>
                         <tr>
-                            <th onclick="sortTable(this, 0)">Keyword</th>
-                            <th onclick="sortTable(this, 1)">Search Volume</th>
-                            <th onclick="sortTable(this, 2)">CPC</th>
-                            <th>Commercial Value</th>
-                            <th>Action</th>
+                            <th onclick="sortTable(this, 0)">{t("report.table.keyword")}</th>
+                            <th onclick="sortTable(this, 1)">{t("report.table.search_volume")}</th>
+                            <th onclick="sortTable(this, 2)">{t("report.table.cpc")}</th>
+                            <th>{t("report.table.commercial_value")}</th>
+                            <th>{t("report.table.action")}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -1636,10 +1645,10 @@ html += """                    </tbody>
 
 # GEO Section
 if geo_data:
-    html += """
+    html += f"""
             <!-- GEO (Generative Engine Optimization) -->
             <section id="geo" class="section">
-                <h2 class="section-title"><span class="icon">🤖</span> GEO - AI Visibility Optimization</h2>
+                <h2 class="section-title"><span class="icon">🤖</span> {t("report.geo.title")}</h2>
 
                 <div class="insight-box">
                     <h3>What is GEO?</h3>
@@ -1786,7 +1795,7 @@ if google_data and google_data.get('status') == 'success':
     html += f"""
             <!-- Google Data -->
             <section id="google-data" class="section">
-                <h2 class="section-title"><span class="icon">📈</span> Google Search & Analytics</h2>
+                <h2 class="section-title"><span class="icon">📈</span> {t("report.section.google_data")}</h2>
                 
                 <!-- Growth Summary -->
                 <div class="insight-box">
@@ -1835,9 +1844,9 @@ if google_data and google_data.get('status') == 'success':
                         <table class="data-table">
                             <thead>
                                 <tr>
-                                    <th>Keyword</th>
-                                    <th>Click Growth</th>
-                                    <th>Pos Change</th>
+                                    <th>{t("report.table.keyword")}</th>
+                                    <th>{t("report.table.click_growth")}</th>
+                                    <th>{t("report.table.pos_change")}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -1865,9 +1874,9 @@ if google_data and google_data.get('status') == 'success':
                         <table class="data-table">
                             <thead>
                                 <tr>
-                                    <th>Page</th>
-                                    <th>Issue</th>
-                                    <th>Metric</th>
+                                    <th>{t("report.table.page")}</th>
+                                    <th>{t("report.table.issue")}</th>
+                                    <th>{t("report.table.metric")}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -1899,10 +1908,10 @@ if google_data and google_data.get('status') == 'success':
                     <table class="data-table">
                         <thead>
                             <tr>
-                                <th>Query</th>
-                                <th>Clicks</th>
-                                <th>Impressions</th>
-                                <th>Pos</th>
+                                <th>{t("report.table.query")}</th>
+                                <th>{t("report.table.clicks")}</th>
+                                <th>{t("report.table.impressions")}</th>
+                                <th>{t("report.table.pos")}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -1928,9 +1937,9 @@ if google_data and google_data.get('status') == 'success':
             </section>
 """
 else:
-    html += """
+    html += f"""
             <section id="google-data" class="section">
-                <h2 class="section-title"><span class="icon">📈</span> Google Search & Analytics</h2>
+                <h2 class="section-title"><span class="icon">📈</span> {t("report.section.google_data")}</h2>
                 <div class="insight-box">
                     <h3>⚠️ Data Not Available</h3>
                     <p>Run <strong>google_integration.py</strong> with a valid account to see real search performance data.</p>
@@ -1940,10 +1949,10 @@ else:
 
 # Performance Section
 if performance_data and len(performance_data) > 0:
-    html += """
+    html += f"""
             <!-- Performance Analysis -->
             <section id="performance" class="section">
-                <h2 class="section-title"><span class="icon">⚡</span> Performance & Core Web Vitals</h2>
+                <h2 class="section-title"><span class="icon">⚡</span> {t("report.performance.title")}</h2>
 
                 <div class="insight-box">
                     <h3>Why Performance Matters for SEO</h3>
@@ -1954,9 +1963,9 @@ if performance_data and len(performance_data) > 0:
                 <table class="data-table">
                     <thead>
                         <tr>
-                            <th>Page</th>
-                            <th>Device</th>
-                            <th>Performance Score</th>
+                            <th>{t("report.table.page")}</th>
+                            <th>{t("report.table.device")}</th>
+                            <th>{t("report.table.performance_score")}</th>
                             <th>LCP</th>
                             <th>FID</th>
                             <th>CLS</th>
@@ -2021,9 +2030,9 @@ if performance_data and len(performance_data) > 0:
             </section>
 """
 else:
-    html += """
+    html += f"""
             <section id="performance" class="section">
-                <h2 class="section-title"><span class="icon">⚡</span> Performance & Core Web Vitals</h2>
+                <h2 class="section-title"><span class="icon">⚡</span> {t("report.performance.title")}</h2>
                 <div class="insight-box">
                     <h3>⚠️ Performance Data Not Available</h3>
                     <p>Run performance_check.py to analyze Core Web Vitals.</p>
@@ -2042,7 +2051,7 @@ if False:
     html += f"""
             <!-- Recommendations & Action Items -->
             <section id="recommendations" class="section">
-                <h2 class="section-title"><span class="icon">📋</span> Action Items & Roadmap</h2>
+                <h2 class="section-title"><span class="icon">📋</span> {t("report.action_items.title")}</h2>
 
                 <h3 style="margin-bottom: 20px;">30-Day Quick Wins</h3>
                 <div class="stats-grid" style="grid-template-columns: 1fr;">
@@ -2117,11 +2126,11 @@ if False:
                 <table class="data-table">
                     <thead>
                         <tr>
-                            <th>Action Item</th>
-                            <th>Impact</th>
-                            <th>Effort</th>
-                            <th>Timeline</th>
-                            <th>Category</th>
+                            <th>{t("report.table.action_item")}</th>
+                            <th>{t("report.table.impact")}</th>
+                            <th>{t("report.table.effort")}</th>
+                            <th>{t("report.table.timeline")}</th>
+                            <th>{t("report.table.category")}</th>
                         </tr>
                     </thead>
                     <tbody>

@@ -46,6 +46,7 @@ seed_keywords:
 report:
   company_name: "Allbirds"
   report_title: "DTC SEO Gap Analysis"
+  language: "en"
   author: "Growth Team"
   include_sections:
     - executive_summary

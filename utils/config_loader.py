@@ -165,6 +165,11 @@ class Config:
         return self.config.get('report', {}).get('report_title', 'SEO Gap Analysis')
 
     @property
+    def report_language(self) -> str:
+        """Get report UI language"""
+        return self.config.get('report', {}).get('language') or self.language_code or 'en'
+
+    @property
     def author(self) -> str:
         """Get report author"""
         return self.config.get('report', {}).get('author', 'SEO Team')

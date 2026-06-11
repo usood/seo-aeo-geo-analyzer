@@ -58,6 +58,7 @@ seed_keywords:
 report:
   company_name: "Your Brand Name"
   report_title: "SEO Gap Analysis"
+  language: "en"  # UI labels only. Data values and AI insight text are not translated.
   author: "SEO Team"
   include_sections:
     - executive_summary
