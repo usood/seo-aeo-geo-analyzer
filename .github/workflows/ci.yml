@@ -27,13 +27,13 @@ jobs:
           # --no-progress: quiet CI logs
           # --max-retries / --retry-wait-time: tolerate transient network blips
           # --accept: treat rate-limit (429) and partial (206) as OK
+          # mailto: links are skipped by lychee unless --include-mail is set.
           # placeholder domains are excluded via .lycheeignore
           args: >-
             --no-progress
             --max-retries 2
             --retry-wait-time 2
             --accept 200,206,429
-            --exclude-mail
             "./**/*.md"
             "./llms.txt"
           fail: true
