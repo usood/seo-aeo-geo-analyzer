@@ -1,0 +1,65 @@
+name: CI
+
+# Lightweight PR hygiene: documentation links + basic security scanning.
+# Designed to run reliably on every pull request without external flakiness.
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  links:
+    name: Docs link check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check Markdown & llms.txt links
+        uses: lycheeverse/lychee-action@v2
+        with:
+          # --no-progress: quiet CI logs
+          # --max-retries / --retry-wait-time: tolerate transient network blips
+          # --accept: treat rate-limit (429) and partial (206) as OK
+          # placeholder domains are excluded via .lycheeignore
+          args: >-
+            --no-progress
+            --max-retries 2
+            --retry-wait-time 2
+            --accept 200,206,429
+            --exclude-mail
+            "./**/*.md"
+            "./llms.txt"
+          fail: true
+
+  security:
+    name: Security hygiene
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install audit tools
+        run: pip install --quiet pip-audit bandit
+
+      - name: Dependency vulnerability scan
+        # Scans declared dependencies for known CVEs. Fails the PR on any finding.
+        run: pip-audit -r requirements.txt
+
+      - name: Static security scan (code & HTML-output risks)
+        # Reports generate HTML, so this surfaces obvious injection/XSS-class
+        # issues. First pass is informational (medium+); the gating pass fails
+        # only on high severity + high confidence, so the check stays reliable
+        # (known-benign stdlib XML-parse warnings won't block PRs).
+        run: |
+          bandit -r . -x ./tests,./.github -ll || true
+          bandit -r . -x ./tests,./.github --severity-level high --confidence-level high
