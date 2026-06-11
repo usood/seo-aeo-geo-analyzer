@@ -1,6 +1,6 @@
-# Contributing to SEO Gap Analyzer
+# Contributing to SEO/AEO/GEO Analyzer
 
-Thank you for considering contributing to SEO Gap Analyzer! 🎉
+Thank you for considering contributing to SEO/AEO/GEO Analyzer.
 
 ## How to Contribute
 
@@ -25,7 +25,7 @@ We love new ideas! Please create an issue with:
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feature/amazing-feature`)
 3. Make your changes
-4. Test thoroughly
+4. Add or update tests for behavior changes
 5. Commit with clear messages (`git commit -m 'Add amazing feature'`)
 6. Push to your fork (`git push origin feature/amazing-feature`)
 7. Open a Pull Request
@@ -41,10 +41,11 @@ We love new ideas! Please create an issue with:
 ### Testing
 
 Before submitting:
-- Test with at least 2 different config files
-- Ensure all scripts run without errors
+- Run `python -m pytest -q`
+- Test with at least 2 different config files when changing analysis behavior
 - Verify generated reports look correct
 - Check that no API keys are exposed
+- Check that generated report HTML escapes untrusted data when rendering new fields
 
 ### Configuration Examples
 
@@ -57,8 +58,8 @@ When adding features that require configuration:
 
 ```bash
 # Clone your fork
-git clone https://github.com/YOUR_USERNAME/seo-gap-analyzer.git
-cd seo-gap-analyzer
+git clone https://github.com/YOUR_USERNAME/seo-aeo-geo-analyzer.git
+cd seo-aeo-geo-analyzer
 
 # Install dependencies
 pip install -r requirements.txt
@@ -74,6 +75,6 @@ cp .env.example .env
 
 ## Questions?
 
-Feel free to open an issue for questions or join discussions!
+Feel free to open an issue for questions.
 
-Thank you for contributing! 🙏
+Thank you for contributing.

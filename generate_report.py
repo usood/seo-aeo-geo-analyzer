@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Generate comprehensive SEO Analysis HTML report
-For: Unleash Wellness (unleashwellness.co)
+Generates an HTML SEO/AEO/GEO report for the configured target domain.
 Includes: Keyword Gaps, GEO, Performance, Content Optimization
 Date: December 5, 2025
 """
@@ -1454,7 +1454,7 @@ if geo_data:
 
                 <div class="insight-box">
                     <h3>What is GEO?</h3>
-                    <p><strong>Generative Engine Optimization</strong> ensures your content is optimized for AI tools like ChatGPT, Google SGE, and Perplexity. This involves structured data (JSON-LD schemas) and content structure (AEO signals) that help AI understand and cite your content.</p>
+                    <p><strong>Generative Engine Optimization</strong> helps your content work well in AI search experiences such as ChatGPT, Perplexity, Google AI Overviews, and Google AI Mode. This involves clear content structure, valid structured data where useful, and AEO signals that help systems understand and cite your content.</p>
                 </div>
 
                 <h3 style="margin: 30px 0 20px;">Current JSON-LD Schema Status</h3>

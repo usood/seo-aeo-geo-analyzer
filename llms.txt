@@ -1,0 +1,32 @@
+# SEO/AEO/GEO Analyzer
+
+> Open-source Python toolkit for SEO, AEO, GEO, keyword-gap, performance, Google Search Console, and generated HTML report analysis.
+
+Important notes:
+- Do not commit `.env`, API credentials, OAuth tokens, generated reports, or private customer data.
+- Use `python -m pytest -q` before merging code changes.
+- Generated report HTML must escape untrusted JSON or API-sourced values.
+- Example configs use public brands only: Allbirds, Asana, and Duolingo.
+
+## Project Docs
+
+- [README](README.md): Setup, usage, examples, maintenance status, and roadmap.
+- [AI readiness guide](docs/AI_READINESS.md): Google AI search guidance, WebMCP, Lighthouse agentic browsing, and llms.txt notes.
+- [Security policy](SECURITY.md): Vulnerability reporting and security expectations.
+- [Contributing guide](CONTRIBUTING.md): Development setup and pull request workflow.
+- [Changelog](CHANGELOG.md): Notable project changes.
+
+## Entry Points
+
+- [run_analysis.py](run_analysis.py): Interactive and automatic workflow orchestrator.
+- [collect_data.py](collect_data.py): Sitemap, metadata, and social profile collection.
+- [dataforseo_collection.py](dataforseo_collection.py): DataForSEO keyword and competitive data collection.
+- [google_integration.py](google_integration.py): Google Search Console and GA4 integration.
+- [generate_report.py](generate_report.py): HTML report generation.
+- [export_data.py](export_data.py): CSV, Excel, and PDF export.
+
+## Optional
+
+- [DTC ecommerce example](examples/configs/d2c-ecommerce.yaml)
+- [B2B SaaS example](examples/configs/saas-b2b.yaml)
+- [Consumer app example](examples/configs/consumer-app.yaml)
