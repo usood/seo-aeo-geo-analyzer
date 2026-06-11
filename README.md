@@ -1,14 +1,25 @@
-# SEO/AEO/GEO Analyzer 🔍
+# SEO/AEO/GEO Analyzer
 
 > Comprehensive SEO, AEO (Answer Engine Optimization), and GEO (Generative Engine Optimization) competitive analysis tool for D2C, B2B, and B2C brands. Identifies keyword opportunities, optimizes for AI search engines, and provides actionable recommendations.
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 
-## ✨ Features
+## Project Status
+
+This project is actively maintained as an open-source SEO and AI-search analysis toolkit.
+
+- **Current maintenance focus:** reliability, security hardening, example anonymization, and AI/agentic search readiness.
+- **Supported runtime:** Python 3.8+.
+- **Verification command:** `python -m pytest -q`.
+- **Contribution model:** pull requests with tests for behavior changes.
+- **Security reporting:** see [SECURITY.md](SECURITY.md).
+- **Release notes:** see [CHANGELOG.md](CHANGELOG.md).
+
+## Features
 
 - **🎯 Keyword Gap Analysis** - Find 100+ high-value keywords your competitors rank for
-- **🤖 GEO (Generative Engine Optimization)** - Optimize for AI search (ChatGPT, Perplexity, Google SGE)
+- **🤖 GEO (Generative Engine Optimization)** - Optimize for AI search experiences, including ChatGPT, Perplexity, Google AI Overviews, and Google AI Mode
 - **⚡ Performance Audit** - Core Web Vitals analysis with PageSpeed Insights
 - **📊 Competitive Intelligence** - Domain metrics, backlinks, and SERP analysis
 - **📝 Content Opportunities** - Categorized by intent (informational, transactional, commercial)
@@ -16,14 +27,14 @@
 - **🎨 Beautiful HTML Reports** - Interactive, sortable data tables
 - **📤 Data Export** - Export analysis data to CSV, Excel, and PDF formats
 
-## 🚀 Quick Start
+## Quick Start
 
 ### 1. Installation
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/seo-gap-analyzer.git
-cd seo-gap-analyzer
+git clone https://github.com/usood/seo-aeo-geo-analyzer.git
+cd seo-aeo-geo-analyzer
 
 # Install dependencies
 pip install -r requirements.txt
@@ -50,7 +61,7 @@ python run_analysis.py
 python run_analysis.py --auto
 ```
 
-## 📋 Configuration
+## Configuration
 
 Edit `config.yaml` to customize for your brand:
 
@@ -77,11 +88,11 @@ branding:
 
 Pre-configured examples for different business types:
 
-- **D2C E-commerce**: `examples/configs/d2c-ecommerce.yaml`
-- **B2B SaaS**: `examples/configs/saas-b2b.yaml`
-- **Pet Wellness**: `examples/configs/unleash-wellness.yaml`
+- **DTC E-commerce**: [examples/configs/d2c-ecommerce.yaml](examples/configs/d2c-ecommerce.yaml) using Allbirds
+- **B2B SaaS**: [examples/configs/saas-b2b.yaml](examples/configs/saas-b2b.yaml) using Asana
+- **Consumer App**: [examples/configs/consumer-app.yaml](examples/configs/consumer-app.yaml) using Duolingo
 
-## 🛠️ Components
+## Components
 
 ### Data Collection Scripts
 
@@ -105,7 +116,7 @@ Pre-configured examples for different business types:
 |--------|---------|
 | `run_analysis.py` | Interactive workflow manager |
 
-## 💰 API Costs
+## API Costs
 
 Uses [DataForSEO](https://dataforseo.com/) API (affordable SEO data):
 
@@ -124,7 +135,7 @@ Uses [DataForSEO](https://dataforseo.com/) API (affordable SEO data):
 
 **PageSpeed Insights API** is free from Google (requires API key: set `PAGESPEED_API_KEY` in `.env`).
 
-## 📊 Report Sections
+## Report Sections
 
 The generated HTML report includes:
 
@@ -139,7 +150,18 @@ The generated HTML report includes:
 9. **Performance Audit** - Core Web Vitals analysis
 10. **Action Items** - 30/60/90-day roadmap
 
-## 🎯 Use Cases
+## AI And Agentic Search Readiness
+
+The project tracks current AI search guidance without overclaiming unsupported tactics:
+
+- Google Search's official guidance says core SEO fundamentals remain the foundation for Google generative AI features, including crawlability, indexability, helpful content, and clear technical structure.
+- `llms.txt` is included as an optional machine-readable project summary and because Lighthouse's experimental agentic browsing category checks for it. Google Search currently says `llms.txt` and other special AI text files are not required for appearance in generative AI search.
+- WebMCP is tracked as an experimental, proposed Chrome capability for exposing structured browser tools to agents. It is most relevant for sites with forms, checkout, booking, dashboards, support flows, or other action-oriented workflows.
+- Lighthouse agentic browsing audits are experimental. Treat their output as readiness signals, not a ranking score.
+
+See [docs/AI_READINESS.md](docs/AI_READINESS.md) for implementation guidance and source links.
+
+## Use Cases
 
 ### D2C E-commerce
 - Identify product keywords competitors rank for
@@ -159,10 +181,10 @@ The generated HTML report includes:
 - Content marketing ideas
 - Technical SEO improvements
 
-## 📁 Project Structure
+## Project Structure
 
 ```
-seo-gap-analyzer/
+seo-aeo-geo-analyzer/
 ├── config.yaml              # Your configuration
 ├── .env                     # API credentials
 ├── requirements.txt         # Python dependencies
@@ -177,10 +199,10 @@ seo-gap-analyzer/
     └── configs/            # Example configurations
         ├── d2c-ecommerce.yaml
         ├── saas-b2b.yaml
-        └── unleash-wellness.yaml
+        └── consumer-app.yaml
 ```
 
-## 🔧 Advanced Usage
+## Advanced Usage
 
 ### Run Individual Components
 
@@ -208,9 +230,19 @@ python generate_report.py
 python run_analysis.py --config my-custom-config.yaml
 ```
 
-## 🤝 Contributing
+## Maintainer Workflow
 
-Contributions welcome! Please:
+Before merging changes:
+
+```bash
+python -m pytest -q
+```
+
+Security-sensitive changes should include regression tests where possible and should avoid committing generated reports, local `.env` files, API keys, or customer data.
+
+## Contributing
+
+Contributions are welcome. Please:
 
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feature/amazing-feature`)
@@ -218,11 +250,11 @@ Contributions welcome! Please:
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
-## 📝 License
+## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🙏 Credits
+## Credits
 
 Built with:
 - [DataForSEO](https://dataforseo.com/) - SEO data API
@@ -230,16 +262,19 @@ Built with:
 - [Beautiful Soup](https://www.crummy.com/software/BeautifulSoup/) - HTML parsing
 - [PyYAML](https://pyyaml.org/) - Configuration management
 
-## 📧 Support
+## Support
 
-- **Issues**: [GitHub Issues](https://github.com/yourusername/seo-gap-analyzer/issues)
-- **Questions**: [Discussions](https://github.com/yourusername/seo-gap-analyzer/discussions)
+- **Issues and questions**: [GitHub Issues](https://github.com/usood/seo-aeo-geo-analyzer/issues)
+- **Security reports**: see [SECURITY.md](SECURITY.md)
 
-## 🗺️ Roadmap
+## Roadmap
 
 - [ ] Multi-language support for reports
 - [x] Export to CSV/Excel/PDF
-- [ ] Integration with Google Search Console
+- [x] Integration with Google Search Console
+- [ ] Agentic browsing readiness checks
+- [ ] WebMCP opportunity detection for actionable site flows
+- [ ] `llms.txt` generator for analyzed websites
 - [ ] Automated scheduling (weekly/monthly reports)
 - [ ] Slack/Email notifications
 - [ ] Dashboard view for tracking over time

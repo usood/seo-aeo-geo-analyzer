@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Export Analysis Data to CSV, Excel, and PDF
-For: Unleash Wellness SEO Audit
+Exports SEO audit data for the configured target domain.
 Date: December 6, 2025
 """
 

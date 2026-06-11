@@ -134,7 +134,7 @@ class LLMAnalyzer:
                 headers = {
                     "Authorization": f"Bearer {self.openrouter_key}",
                     "Content-Type": "application/json",
-                    "HTTP-Referer": "https://seo-gap-analyzer.com", 
+                    "HTTP-Referer": "https://github.com/usood/seo-aeo-geo-analyzer",
                 }
                 payload = {
                     "model": self.model,

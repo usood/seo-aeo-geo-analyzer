@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Master Orchestrator Script for SEO Analysis
-Interactive workflow manager for Unleash Wellness SEO audit
+Interactive workflow manager for SEO/AEO/GEO audits.
 Date: December 5, 2025
 """
 

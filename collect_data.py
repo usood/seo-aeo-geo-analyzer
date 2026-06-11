@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Keyword Gap Analysis Data Collection Script
-For: unleashwellness.co
+Collects sitemap, page, and social profile data for the configured target domain.
 Date: December 5, 2025
 """
 
