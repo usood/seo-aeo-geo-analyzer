@@ -12,6 +12,7 @@ import os
 from datetime import datetime
 from utils.path_manager import get_current_project_path, get_latest_file
 from utils.config_loader import load_config # Assuming config_loader is moved to utils
+from utils.html_safety import escape_html, safe_css_class, safe_http_url
 
 # ============================================================================
 # LOAD DATA FILES
@@ -89,6 +90,7 @@ else:
 TARGET_DOMAIN = sitemap_data['metadata']['target_domain']
 COMPETITORS = sitemap_data['metadata']['competitors']
 COMPANY_NAME = sitemap_data['metadata'].get('company_name', TARGET_DOMAIN.split('.')[0].title())
+COMPANY_NAME_HTML = escape_html(COMPANY_NAME)
 
 # Extract gap data from DataForSEO results
 gaps = dataforseo_data.get('gaps', {})
@@ -164,7 +166,7 @@ html = f"""<!DOCTYPE html>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="noindex, nofollow">
-    <title>SEO Analysis Report | {COMPANY_NAME} | {report_date}</title>
+    <title>SEO Analysis Report | {COMPANY_NAME_HTML} | {report_date}</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500;600;700;800&display=swap');
 
@@ -645,7 +647,7 @@ html = f"""<!DOCTYPE html>
 <body>
     <nav class="sidebar">
         <div class="sidebar-header">
-            <div class="sidebar-logo">🐾 {COMPANY_NAME}</div>
+            <div class="sidebar-logo">🐾 {COMPANY_NAME_HTML}</div>
             <div class="sidebar-subtitle">SEO Analysis Report</div>
         </div>
 
@@ -715,7 +717,7 @@ html = f"""<!DOCTYPE html>
             <div class="header-top">
                 <div>
                     <h1>SEO Analysis Report</h1>
-                    <p class="date">{COMPANY_NAME} • {report_date} • India Market</p>
+                    <p class="date">{COMPANY_NAME_HTML} • {report_date} • India Market</p>
                 </div>
                 <div class="score-card">
                     <div class="score-label">Total Opportunities</div>
@@ -732,7 +734,7 @@ html = f"""<!DOCTYPE html>
 
                 <div class="insight-box">
                     <h3>🎯 Key Finding</h3>
-                    <p>{COMPANY_NAME} has <strong>significant growth opportunities</strong> in organic search. Competitors are ranking for {total_gaps} high-value keywords where you currently have limited or no presence.</p>
+                    <p>{COMPANY_NAME_HTML} has <strong>significant growth opportunities</strong> in organic search. Competitors are ranking for {total_gaps} high-value keywords where you currently have limited or no presence.</p>
                 </div>
 
                 <div class="stats-grid">
@@ -790,12 +792,25 @@ html += f"""
                             <div style="display: flex; flex-direction: column; gap: 10px;">
 """
 for kw in categorized_gaps['high_opportunity'][:5]:
+    keyword_html = escape_html(kw.get('keyword', ''))
+    intent = kw.get('intent', 'unknown')
+    intent_class = safe_css_class(intent)
+    intent_html = escape_html(str(intent).title())
+    search_volume = kw.get('search_volume', 0)
+    try:
+        search_volume_html = escape_html(f"{int(search_volume):,}")
+    except (TypeError, ValueError):
+        search_volume_html = escape_html(search_volume)
+    try:
+        difficulty_html = escape_html(int(kw.get('difficulty', 0)))
+    except (TypeError, ValueError):
+        difficulty_html = escape_html(kw.get('difficulty', 0))
     html += f"""                                <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: var(--gray-50); border-radius: 8px; border-left: 4px solid var(--primary);">
                                     <div style="min-width: 0;">
-                                        <div style="font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{kw['keyword']}</div>
-                                        <div style="font-size: 0.8em; color: var(--gray-600);">{kw['search_volume']:,}/mo • Diff: {int(kw.get('difficulty', 0))}</div>
+                                        <div style="font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{keyword_html}</div>
+                                        <div style="font-size: 0.8em; color: var(--gray-600);">{search_volume_html}/mo • Diff: {difficulty_html}</div>
                                     </div>
-                                    <span class="status-pill {kw['intent']}" style="margin-left: 10px;">{kw['intent'].title()}</span>
+                                    <span class="status-pill {intent_class}" style="margin-left: 10px;">{intent_html}</span>
                                 </div>"""
 html += """                            </div>
                         </div>
@@ -807,23 +822,30 @@ html += """                            </div>
 """
 if google_data and google_data.get('gsc', {}).get('optimization_needed'):
     for p in google_data['gsc']['optimization_needed'][:5]:
-        url_path = p['url'].replace('https://', '').replace('http://', '').split('/', 1)[-1]
+        url = p.get('url', '')
+        url_path = url.replace('https://', '').replace('http://', '').split('/', 1)[-1]
         
         # Determine advice
-        if 'CTR' in p['reason']:
+        reason = p.get('reason', '')
+        if 'CTR' in reason:
             advice = "✍️ Rewrite Title/Meta & Add Schema"
-        elif 'Striking' in p['reason']:
+        elif 'Striking' in reason:
             advice = "🔗 Add Internal Links & Expand Content"
         else:
             advice = "🔍 Review User Intent"
             
+        url_html = escape_html(url)
+        url_path_html = escape_html(url_path)
+        reason_html = escape_html(reason)
+        metric_html = escape_html(p.get('metric', ''))
+        advice_html = escape_html(advice)
         html += f"""                                <div style="display: flex; justify-content: space-between; align-items: flex-start; padding: 12px; background: #fef2f2; border-radius: 8px; border-left: 4px solid var(--danger);">
                                     <div style="flex: 1; min-width: 0; margin-right: 15px;">
-                                        <div style="font-weight: 600; word-break: break-all; line-height: 1.3; margin-bottom: 4px; color: var(--dark);" title="{p['url']}">/{url_path}</div>
-                                        <div style="font-size: 0.8em; color: var(--gray-600); margin-bottom: 2px;">{p['reason']}</div>
-                                        <div style="font-size: 0.75em; color: var(--dark); font-weight: 600;">{advice}</div>
+                                        <div style="font-weight: 600; word-break: break-all; line-height: 1.3; margin-bottom: 4px; color: var(--dark);" title="{url_html}">/{url_path_html}</div>
+                                        <div style="font-size: 0.8em; color: var(--gray-600); margin-bottom: 2px;">{reason_html}</div>
+                                        <div style="font-size: 0.75em; color: var(--dark); font-weight: 600;">{advice_html}</div>
                                     </div>
-                                    <span style="font-size: 0.8em; font-weight: 600; color: var(--danger); white-space: nowrap; margin-top: 2px;">{p['metric']}</span>
+                                    <span style="font-size: 0.8em; font-weight: 600; color: var(--danger); white-space: nowrap; margin-top: 2px;">{metric_html}</span>
                                 </div>"""
 else:
     html += """<div style="padding: 20px; text-align: center; color: var(--gray-600); background: var(--gray-50); border-radius: 8px;">No urgent fixes detected via GSC.</div>"""
@@ -840,24 +862,24 @@ if llm_data and 'holistic_strategy' in llm_data:
     
     # Handle errors or text-only response
     if 'error' in strategy:
-        strategy_content = f"<p style='color: var(--danger);'>{strategy['error']}</p>"
+        strategy_content = f"<p style='color: var(--danger);'>{escape_html(strategy['error'])}</p>"
     elif 'text_response' in strategy:
-        strategy_content = f"<div style='white-space: pre-wrap;'>{strategy['text_response'][:1000]}...</div>"
+        strategy_content = f"<div style='white-space: pre-wrap;'>{escape_html(strategy['text_response'][:1000])}...</div>"
     else:
         # Pillars
         pillars = strategy.get('pillars', {})
-        content_pillar = "".join([f"<li style='margin-bottom: 5px;'>{item}</li>" for item in pillars.get('content', [])])
-        tech_pillar = "".join([f"<li style='margin-bottom: 5px;'>{item}</li>" for item in pillars.get('technical', [])])
-        auth_pillar = "".join([f"<li style='margin-bottom: 5px;'>{item}</li>" for item in pillars.get('authority', [])])
+        content_pillar = "".join([f"<li style='margin-bottom: 5px;'>{escape_html(item)}</li>" for item in pillars.get('content', [])])
+        tech_pillar = "".join([f"<li style='margin-bottom: 5px;'>{escape_html(item)}</li>" for item in pillars.get('technical', [])])
+        auth_pillar = "".join([f"<li style='margin-bottom: 5px;'>{escape_html(item)}</li>" for item in pillars.get('authority', [])])
         
         # Quick Wins
-        quick_wins = "".join([f"<span style='background: rgba(255,255,255,0.5); padding: 4px 8px; border-radius: 4px; font-size: 0.85em;'>⚡ {item}</span>" for item in strategy.get('quick_wins', [])])
+        quick_wins = "".join([f"<span style='background: rgba(255,255,255,0.5); padding: 4px 8px; border-radius: 4px; font-size: 0.85em;'>⚡ {escape_html(item)}</span>" for item in strategy.get('quick_wins', [])])
 
         strategy_content = f"""
             <div style="margin-bottom: 25px;">
                 <h4 style="color: var(--primary-dark); margin-bottom: 10px; font-size: 1.1em;">Strategic Executive Summary</h4>
                 <p style="font-size: 1em; line-height: 1.6; color: var(--gray-800); background: rgba(255,255,255,0.5); padding: 15px; border-radius: 8px; border-left: 4px solid var(--primary);">
-                    {strategy.get('executive_summary', 'No summary available.')}
+                    {escape_html(strategy.get('executive_summary', 'No summary available.'))}
                 </p>
             </div>
 
@@ -1094,7 +1116,9 @@ for platform, info in social_platforms.items():
                         <div style="font-size: 0.85em; color: var(--gray-600);">{status_text}</div>
 """
     if is_active and profile_url:
-        html += f"""                        <a href="{profile_url}" target="_blank" style="font-size: 0.75em; color: var(--primary); margin-top: 5px; display: inline-block;">View Profile</a>
+        profile_url_html = safe_http_url(profile_url)
+        if profile_url_html:
+            html += f"""                        <a href="{profile_url_html}" target="_blank" rel="noopener noreferrer" style="font-size: 0.75em; color: var(--primary); margin-top: 5px; display: inline-block;">View Profile</a>
 """
     html += """                    </div>
 """
@@ -1139,7 +1163,9 @@ html += f"""
 if intl_data['hreflang_tags']:
     html += """                        <div style="background: var(--gray-100); padding: 10px; border-radius: 8px; font-size: 0.85em; margin-bottom: 15px;">"""
     for tag in intl_data['hreflang_tags'][:3]:
-        html += f"""<div>{tag['lang']}: {tag['url']}</div>"""
+        lang_html = escape_html(tag.get('lang', ''))
+        url_html = escape_html(tag.get('url', ''))
+        html += f"""<div>{lang_html}: {url_html}</div>"""
     if len(intl_data['hreflang_tags']) > 3:
         html += f"""<div>...and {len(intl_data['hreflang_tags']) - 3} more</div>"""
     html += """</div>"""
@@ -1215,18 +1241,26 @@ html += f"""
 for kw in categorized_gaps['high_opportunity'][:25]:
     difficulty = kw.get('difficulty', 'N/A')
     difficulty_display = f"{int(difficulty)}" if isinstance(difficulty, (int, float)) else 'N/A'
+    difficulty_value_html = escape_html(difficulty if isinstance(difficulty, (int, float)) else 0)
+    search_volume = kw.get('search_volume', 0)
+    search_volume_value = search_volume if isinstance(search_volume, (int, float)) else 0
+    search_volume_html = escape_html(search_volume)
 
-    comp_name = kw['competitor'].split('.')[0].title()
-    comp_pos = kw.get('competitor_position', '?')
+    keyword_html = escape_html(kw.get('keyword', ''))
+    intent = kw.get('intent', 'unknown')
+    intent_class = safe_css_class(intent)
+    intent_html = escape_html(str(intent).title())
+    comp_name = escape_html(kw.get('competitor', '').split('.')[0].title())
+    comp_pos = escape_html(kw.get('competitor_position', '?'))
 
-    priority = 'critical' if kw['search_volume'] >= 1000 else 'high'
+    priority = 'critical' if search_volume_value >= 1000 else 'high'
     priority_text = 'CRITICAL' if priority == 'critical' else 'HIGH'
 
     html += f"""                        <tr>
-                            <td><strong>{kw['keyword']}</strong></td>
-                            <td data-value="{kw['search_volume']}">{kw['search_volume']}/mo</td>
-                            <td data-value="{difficulty if isinstance(difficulty, (int, float)) else 0}">{difficulty_display}</td>
-                            <td><span class="status-pill {kw['intent']}">{kw['intent'].title()}</span></td>
+                            <td><strong>{keyword_html}</strong></td>
+                            <td data-value="{search_volume_value}">{search_volume_html}/mo</td>
+                            <td data-value="{difficulty_value_html}">{difficulty_display}</td>
+                            <td><span class="status-pill {intent_class}">{intent_html}</span></td>
                             <td><span class="competitor-tag">#{comp_pos} {comp_name}</span></td>
                             <td><span class="priority-badge {priority}">{priority_text}</span></td>
                         </tr>
@@ -1264,22 +1298,30 @@ html += f"""
 for kw in categorized_gaps['quick_wins'][:25]:
     difficulty = kw.get('difficulty', 'N/A')
     difficulty_display = f"{int(difficulty)}" if isinstance(difficulty, (int, float)) else 'N/A'
+    difficulty_value_html = escape_html(difficulty if isinstance(difficulty, (int, float)) else 0)
+    search_volume = kw.get('search_volume', 0)
+    search_volume_value = search_volume if isinstance(search_volume, (int, float)) else 0
+    search_volume_html = escape_html(search_volume)
+    keyword_html = escape_html(kw.get('keyword', ''))
+    intent = kw.get('intent', 'unknown')
+    intent_class = safe_css_class(intent)
+    intent_html = escape_html(str(intent).title())
 
     # Suggest action based on intent
-    if kw['intent'] == 'informational':
+    if intent == 'informational':
         action = 'Create blog post'
-    elif kw['intent'] == 'transactional':
+    elif intent == 'transactional':
         action = 'Optimize product page'
-    elif kw['intent'] == 'commercial':
+    elif intent == 'commercial':
         action = 'Create comparison page'
     else:
         action = 'Create targeted content'
 
     html += f"""                        <tr>
-                            <td><strong>{kw['keyword']}</strong></td>
-                            <td data-value="{kw['search_volume']}">{kw['search_volume']}/mo</td>
-                            <td data-value="{difficulty if isinstance(difficulty, (int, float)) else 0}"><span class="status-pill" style="background: #d1fae5; color: #065f46;">{difficulty_display}</span></td>
-                            <td><span class="status-pill {kw['intent']}">{kw['intent'].title()}</span></td>
+                            <td><strong>{keyword_html}</strong></td>
+                            <td data-value="{search_volume_value}">{search_volume_html}/mo</td>
+                            <td data-value="{difficulty_value_html}"><span class="status-pill" style="background: #d1fae5; color: #065f46;">{difficulty_display}</span></td>
+                            <td><span class="status-pill {intent_class}">{intent_html}</span></td>
                             <td>{action}</td>
                         </tr>
 """
@@ -1313,7 +1355,15 @@ html += f"""
 """
 
 for kw in categorized_gaps['content_gaps'][:30]:
-    keyword_lower = kw['keyword'].lower()
+    keyword = kw.get('keyword', '')
+    keyword_html = escape_html(keyword)
+    search_volume = kw.get('search_volume', 0)
+    search_volume_value = search_volume if isinstance(search_volume, (int, float)) else 0
+    search_volume_html = escape_html(search_volume)
+    keyword_lower = keyword.lower()
+    intent = kw.get('intent', 'unknown')
+    intent_class = safe_css_class(intent)
+    intent_html = escape_html(str(intent).title())
 
     # Suggest content type
     if 'how' in keyword_lower or 'tips' in keyword_lower:
@@ -1328,10 +1378,10 @@ for kw in categorized_gaps['content_gaps'][:30]:
         content_type = '✍️ Blog Post'
 
     html += f"""                        <tr>
-                            <td><strong>{kw['keyword']}</strong></td>
-                            <td data-value="{kw['search_volume']}">{kw['search_volume']}/mo</td>
+                            <td><strong>{keyword_html}</strong></td>
+                            <td data-value="{search_volume_value}">{search_volume_html}/mo</td>
                             <td>{content_type}</td>
-                            <td><span class="status-pill {kw['intent']}">{kw['intent'].title()}</span></td>
+                            <td><span class="status-pill {intent_class}">{intent_html}</span></td>
                         </tr>
 """
 
@@ -1367,18 +1417,23 @@ html += f"""
 for kw in categorized_gaps['product_gaps'][:20]:
     cpc = kw.get('cpc', 0)
     commercial_value = 'High' if cpc > 20 else ('Medium' if cpc > 10 else 'Low')
+    keyword = kw.get('keyword', '')
+    keyword_html = escape_html(keyword)
+    search_volume = kw.get('search_volume', 0)
+    search_volume_value = search_volume if isinstance(search_volume, (int, float)) else 0
+    search_volume_html = escape_html(search_volume)
 
     # Suggest action
-    if 'buy' in kw['keyword'].lower():
+    if 'buy' in keyword.lower():
         action = 'Optimize product page'
-    elif 'supplement' in kw['keyword'].lower() or 'vitamin' in kw['keyword'].lower():
+    elif 'supplement' in keyword.lower() or 'vitamin' in keyword.lower():
         action = 'Create/optimize product'
     else:
         action = 'Review product category'
 
     html += f"""                        <tr>
-                            <td><strong>{kw['keyword']}</strong></td>
-                            <td data-value="{kw['search_volume']}">{kw['search_volume']}/mo</td>
+                            <td><strong>{keyword_html}</strong></td>
+                            <td data-value="{search_volume_value}">{search_volume_html}/mo</td>
                             <td data-value="{cpc}">₹{cpc:.2f}</td>
                             <td><span class="status-pill" style="background: {'#d1fae5' if commercial_value == 'High' else '#fef3c7'}; color: {'#065f46' if commercial_value == 'High' else '#92400e'};">{commercial_value}</span></td>
                             <td>{action}</td>
@@ -1416,14 +1471,14 @@ if geo_data:
             schemas = data.get('schemas', [])
             aeo = data.get('aeo_signals', {})
             
-            page_name = page_type.title()
+            page_name = escape_html(page_type.title())
             
             # Format schema list
-            schema_types = [s['type'] for s in schemas]
-            schema_list = ', '.join(set(schema_types)) if schema_types else 'None found'
+            schema_types = [s.get('type', '') for s in schemas]
+            schema_list = escape_html(', '.join(set(schema_types)) if schema_types else 'None found')
             
             # Determine status
-            issues_count = sum(len(s['issues']) for s in schemas)
+            issues_count = sum(len(s.get('issues', [])) for s in schemas)
             if not schemas:
                 status = '❌ Missing'
             elif issues_count > 0:
@@ -1440,8 +1495,11 @@ if geo_data:
 """
             # Show specific issues
             for s in schemas:
-                if s['issues']:
-                    html += f"""                            <div style="font-size: 0.85em; color: var(--danger); margin-top: 2px;">⚠️ {s['type']}: {', '.join(s['issues'])}</div>"""
+                issues = s.get('issues', [])
+                if issues:
+                    schema_type_html = escape_html(s.get('type', ''))
+                    issues_html = escape_html(', '.join(str(issue) for issue in issues))
+                    html += f"""                            <div style="font-size: 0.85em; color: var(--danger); margin-top: 2px;">⚠️ {schema_type_html}: {issues_html}</div>"""
             
             # Show AEO signals
             if aeo:
@@ -1477,7 +1535,7 @@ if geo_data:
   "description": "Product description",
   "brand": {
     "@type": "Brand",
-    "name": "{COMPANY_NAME}"
+    "name": "{COMPANY_NAME_HTML}"
   },
   "offers": {
     "@type": "Offer",
@@ -1508,7 +1566,7 @@ if geo_data:
   "headline": "How to Care for Your Dog's Joint Health",
   "author": {
     "@type": "Organization",
-    "name": "{COMPANY_NAME}"
+    "name": "{COMPANY_NAME_HTML}"
   },
   "datePublished": "2025-12-05",
   "articleBody": "Full article text..."
@@ -1597,10 +1655,13 @@ if google_data and google_data.get('status') == 'success':
 """
     if gsc.get('trending_up'):
         for q in gsc.get('trending_up', []):
+            keyword_html = escape_html(q.get('keyword', ''))
+            click_change_html = escape_html(q.get('click_change', ''))
+            position_change_html = escape_html(q.get('position_change', ''))
             html += f"""                                <tr>
-                                    <td><strong>{q['keyword']}</strong></td>
-                                    <td style="color: var(--success);">+{q['click_change']}</td>
-                                    <td style="color: var(--success);">+{q['position_change']}</td>
+                                    <td><strong>{keyword_html}</strong></td>
+                                    <td style="color: var(--success);">+{click_change_html}</td>
+                                    <td style="color: var(--success);">+{position_change_html}</td>
                                 </tr>"""
     else:
         html += """<tr><td colspan="3" style="text-align:center; color: var(--gray-600);">No significant uptrends detected</td></tr>"""
@@ -1624,12 +1685,17 @@ if google_data and google_data.get('status') == 'success':
 """
     if gsc.get('optimization_needed'):
         for p in gsc.get('optimization_needed', []):
-            url_path = p['url'].replace('https://', '').replace('http://', '').split('/', 1)[-1]
+            url = p.get('url', '')
+            url_path = url.replace('https://', '').replace('http://', '').split('/', 1)[-1]
             if not url_path: url_path = '/'
+            url_html = escape_html(url)
+            url_path_html = escape_html(url_path[:30])
+            reason_html = escape_html(p.get('reason', ''))
+            metric_html = escape_html(p.get('metric', ''))
             html += f"""                                <tr>
-                                    <td title="{p['url']}">/{url_path[:30]}...</td>
-                                    <td>{p['reason']}</td>
-                                    <td>{p['metric']}</td>
+                                    <td title="{url_html}">/{url_path_html}...</td>
+                                    <td>{reason_html}</td>
+                                    <td>{metric_html}</td>
                                 </tr>"""
     else:
         html += """<tr><td colspan="3" style="text-align:center; color: var(--gray-600);">No urgent optimization targets found</td></tr>"""
@@ -1653,11 +1719,19 @@ if google_data and google_data.get('status') == 'success':
                         <tbody>
 """
     for q in gsc.get('top_queries', []):
+        keyword_html = escape_html(q.get('keyword', ''))
+        clicks_html = escape_html(q.get('clicks', ''))
+        impressions_html = escape_html(q.get('impressions', ''))
+        position = q.get('position', 0)
+        try:
+            position_html = escape_html(f"{float(position):.1f}")
+        except (TypeError, ValueError):
+            position_html = escape_html(position)
         html += f"""                            <tr>
-                                <td><strong>{q['keyword']}</strong></td>
-                                <td>{q['clicks']}</td>
-                                <td>{q['impressions']}</td>
-                                <td>{q['position']:.1f}</td>
+                                <td><strong>{keyword_html}</strong></td>
+                                <td>{clicks_html}</td>
+                                <td>{impressions_html}</td>
+                                <td>{position_html}</td>
                             </tr>"""
     html += """                        </tbody>
                     </table>
@@ -1714,11 +1788,12 @@ if performance_data and len(performance_data) > 0:
         fid_status = '✅' if fid < 100 else ('⚠️' if fid < 300 else '❌')
         cls_status = '✅' if cls < 0.1 else ('⚠️' if cls < 0.25 else '❌')
 
-        page_name = result['url'].split('/')[-1] or 'Homepage'
+        page_name = escape_html(result.get('url', '').split('/')[-1] or 'Homepage')
+        device_html = escape_html(str(result.get('device', '')).title())
 
         html += f"""                        <tr>
                             <td><strong>{page_name}</strong></td>
-                            <td>{result['device'].title()}</td>
+                            <td>{device_html}</td>
                             <td>
                                 <div class="performance-score {score_class}" style="display: inline-flex; width: 50px; height: 50px;">
                                     {int(score)}
