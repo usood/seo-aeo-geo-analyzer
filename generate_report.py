@@ -114,8 +114,9 @@ COMPANY_NAME = sitemap_data['metadata'].get('company_name', TARGET_DOMAIN.split(
 COMPANY_NAME_HTML = escape_html(COMPANY_NAME)
 BRANDING = sitemap_data['metadata'].get('branding', {})
 
-if os.path.exists("config.yaml"):
-    REPORT_LANGUAGE = resolve_report_language(load_config())
+config_path = os.getenv("SEO_ANALYZER_CONFIG", "config.yaml")
+if os.path.exists(config_path):
+    REPORT_LANGUAGE = resolve_report_language(load_config(config_path))
 else:
     REPORT_LANGUAGE = sitemap_data.get('metadata', {}).get('language', 'en')
 

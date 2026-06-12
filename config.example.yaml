@@ -68,3 +68,23 @@ report:
     - geo_optimization
     - performance_audit
     - recommendations
+
+# Optional scheduled analysis settings.
+# Scheduling is handled outside the core analyzer by scripts/run_scheduled_analysis.py
+# or the GitHub Actions workflow. Generated reports should be stored as artifacts
+# or external files, not committed back to the repo.
+schedule:
+  enabled: false
+  frequency: "weekly"
+  timezone: "UTC"
+  steps:
+    - collect_data
+    - dataforseo
+    - geo
+    - google
+    - performance
+    - site_llms
+    - webmcp
+    - agentic_browsing
+    - report
+    - export

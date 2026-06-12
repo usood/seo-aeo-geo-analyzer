@@ -18,8 +18,9 @@ import re
 # Configuration
 try:
     import yaml
-    if os.path.exists('config.yaml'):
-        with open('config.yaml', 'r') as f:
+    config_path = os.getenv('SEO_ANALYZER_CONFIG', 'config.yaml')
+    if os.path.exists(config_path):
+        with open(config_path, 'r') as f:
             config = yaml.safe_load(f)
             TARGET_DOMAIN = config.get('target', {}).get('domain')
             COMPETITORS = {c['domain']: c['name'] for c in config.get('competitors', [])}
@@ -457,6 +458,11 @@ def analyze_local_international_seo(domain):
 
 def get_project_folder():
     """Determine project folder based on domain"""
+    scheduled_output_dir = os.getenv("SEO_ANALYZER_OUTPUT_DIR")
+    if scheduled_output_dir:
+        os.makedirs(scheduled_output_dir, exist_ok=True)
+        return scheduled_output_dir
+
     # Use domain name without TLD (e.g., 'snezzi' for 'snezzi.com')
     project_name = TARGET_DOMAIN.split('.')[0].lower()
         
