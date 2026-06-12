@@ -12,6 +12,9 @@ from pathlib import Path
 
 import yaml
 
+from utils.rank_tracking import write_rank_snapshot
+from utils.run_history import write_run_summary
+
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
@@ -126,6 +129,13 @@ def write_summary(run_dir: str | Path, steps: list[str], results: list[dict]) ->
     return summary_path
 
 
+def write_analysis_artifacts(run_dir: str | Path, steps: list[str], results: list[dict]) -> dict[str, Path]:
+    scheduled_run = write_summary(run_dir, steps, results)
+    run_summary = write_run_summary(run_dir)
+    rank_snapshot = write_rank_snapshot(run_dir)
+    return {"scheduled_run": scheduled_run, "run_summary": run_summary, "rank_snapshot": rank_snapshot}
+
+
 def parse_step_override(value: str | None) -> list[str] | None:
     if not value:
         return None
@@ -153,8 +163,10 @@ def main(argv: list[str] | None = None) -> int:
             return 0
 
         results = run_steps(steps, run_dir, config_path=args.config)
-        summary_path = write_summary(run_dir, steps, results)
-        print(f"[scheduled] Summary: {summary_path}")
+        artifacts = write_analysis_artifacts(run_dir, steps, results)
+        print(f"[scheduled] Summary: {artifacts['scheduled_run']}")
+        print(f"[scheduled] Run summary: {artifacts['run_summary']}")
+        print(f"[scheduled] Rank snapshot: {artifacts['rank_snapshot']}")
         return 0
     except ScheduledAnalysisError as exc:
         print(f"[scheduled] ERROR: {exc}", file=sys.stderr)

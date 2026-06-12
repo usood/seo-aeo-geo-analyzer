@@ -8,10 +8,17 @@ import pytest
 from scripts.run_scheduled_analysis import (
     ScheduledAnalysisError,
     build_run_directory,
+    write_analysis_artifacts,
     load_schedule_config,
     resolve_steps,
     run_steps,
 )
+
+
+def write_json(path, payload):
+    import json
+
+    path.write_text(json.dumps(payload), encoding="utf-8")
 
 
 def test_load_schedule_config_reads_schedule_defaults(tmp_path):
@@ -77,3 +84,24 @@ def test_run_steps_sets_output_dir_and_stops_on_failure(tmp_path):
     assert [call[0][-1] for call in calls] == ["collect_data.py", "dataforseo_collection.py"]
     assert calls[0][1]["env"]["SEO_ANALYZER_OUTPUT_DIR"] == str(tmp_path)
     assert calls[0][1]["env"]["SEO_ANALYZER_CONFIG"] == "examples/configs/d2c-ecommerce.yaml"
+
+
+def test_write_analysis_artifacts_persists_schedule_and_run_summaries(tmp_path):
+    write_json(
+        tmp_path / "analysis_data_20260612.json",
+        {
+            "metadata": {"target_domain": "example.com"},
+            "sitemap_analysis": {"example.com": {"total_urls": 2}},
+        },
+    )
+    write_json(tmp_path / "dataforseo_final_20260612.json", {"gaps": {"top_100": []}})
+
+    artifacts = write_analysis_artifacts(
+        tmp_path,
+        ["collect_data", "dataforseo"],
+        [{"step": "collect_data", "status": "success"}],
+    )
+
+    assert artifacts["scheduled_run"] == tmp_path / "scheduled_run.json"
+    assert artifacts["run_summary"] == tmp_path / "run_summary.json"
+    assert artifacts["rank_snapshot"] == tmp_path / "rank_snapshot.json"

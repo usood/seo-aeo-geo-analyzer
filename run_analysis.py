@@ -114,6 +114,7 @@ def show_menu():
         ("9", "Generate Site llms.txt (optional)", "generate_site_llms.py", "~5 seconds"),
         ("10", "WebMCP Opportunity Analysis (optional)", "webmcp_analyzer.py", "~5 seconds"),
         ("11", "Lighthouse Agentic Browsing (optional)", "agentic_browsing_check.py", "~1-3 minutes"),
+        ("12", "Generate History Dashboard", "generate_dashboard.py", "~5 seconds"),
         ("A", "Run ALL Steps (Complete Analysis)", "", "~25-35 minutes total"),
         ("Q", "Quit", "", "")
     ]
@@ -222,7 +223,8 @@ def show_status():
         ("*-seo-audit-*.html", "HTML Report", "Step 7"),
         ("*-llms.txt", "Site llms.txt (optional)", "Step 9"),
         ("webmcp_analysis.json", "WebMCP Opportunity (optional)", "Step 10"),
-        ("agentic_browsing.json", "Agentic Browsing (optional)", "Step 11")
+        ("agentic_browsing.json", "Agentic Browsing (optional)", "Step 11"),
+        ("reports/index.html", "History Dashboard", "Step 12")
     ]
 
     for pattern, description, step in files_to_check:
@@ -300,6 +302,9 @@ def handle_choice(choice):
 
     elif choice == "11":
         run_script("agentic_browsing_check.py", "Lighthouse Agentic Browsing")
+
+    elif choice == "12":
+        run_script("generate_dashboard.py", "Generate History Dashboard")
 
     else:
         print_error("Invalid option. Please try again.")

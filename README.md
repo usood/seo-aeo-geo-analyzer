@@ -110,7 +110,28 @@ To run a full paid workflow, choose a real config and include `dataforseo` in th
 - `PAGESPEED_API_KEY`
 - optional `GEMINI_API_KEY` or `OPENROUTER_API_KEY`
 
+Each scheduled run writes:
+
+- `scheduled_run.json` - step execution status
+- `run_summary.json` - normalized metrics for history and comparison
+- `rank_snapshot.json` - GSC keyword positions when Google Search Console data is available
+
 Scheduled reports are uploaded as workflow artifacts and should not be committed back to the repository.
+
+### 5. Compare Runs And Generate Dashboard
+
+```bash
+# Compare the latest two saved runs
+python compare_runs.py --reports-root reports --domain example.com --output reports/example-com/latest-comparison.json
+
+# Track keyword rank movement from saved GSC data
+python rank_tracker.py --run-dir reports/example-com/20260612_100000
+
+# Generate a static dashboard at reports/index.html
+python generate_dashboard.py --reports-root reports
+```
+
+The dashboard is static HTML and reads saved `run_summary.json` files. It does not require a database or web server.
 
 ## Configuration
 
@@ -136,6 +157,9 @@ branding:
 
 report:
   language: "en" # UI labels only; keywords, URLs, metrics, and AI text stay unchanged.
+
+tracking:
+  keywords: [] # Optional future allowlist; GSC top queries are tracked by default when available.
 ```
 
 ### Report Languages
@@ -172,6 +196,9 @@ Pre-configured examples for different business types:
 | `webmcp_analyzer.py`        | WebMCP opportunity scoring for action flows (offline, free)  | `webmcp_analysis.json`      | ~5s     |
 | `agentic_browsing_check.py` | Local Lighthouse agentic-browsing audit (graceful fallback)  | `agentic_browsing.json`     | ~1-3min |
 | `scripts/run_scheduled_analysis.py` | Scheduled wrapper for cron/CI runs                  | `reports/<domain>/<run_id>/` | varies  |
+| `compare_runs.py`          | Compare saved run summaries                                  | `run_comparison.json`       | ~5s     |
+| `rank_tracker.py`          | Create or compare GSC keyword rank snapshots                 | `rank_snapshot.json`        | ~5s     |
+| `generate_dashboard.py`    | Generate static history dashboard                            | `reports/index.html`        | ~5s     |
 
 ### Report Generation
 
@@ -264,6 +291,9 @@ seo-aeo-geo-analyzer/
 ├── requirements.txt         # Python dependencies
 ├── README.md               # This file
 ├── run_analysis.py         # Main orchestrator
+├── compare_runs.py         # Compare saved run summaries
+├── rank_tracker.py         # Create/compare keyword rank snapshots
+├── generate_dashboard.py   # Static history dashboard generator
 ├── collect_data.py         # Sitemap & social scraper
 ├── dataforseo_collection.py # API automation
 ├── geo_analyzer.py         # JSON-LD extractor
@@ -295,7 +325,22 @@ python export_data.py
 
 # Generate report from existing data
 python generate_report.py
+
+# Compare latest saved runs
+python compare_runs.py --reports-root reports --domain example.com
+
+# Generate keyword rank snapshot for a saved run
+python rank_tracker.py --run-dir reports/example-com/20260612_100000
+
+# Generate static dashboard
+python generate_dashboard.py --reports-root reports
 ```
+
+### History And Rank Tracking
+
+Run history is file-based. `scripts/run_scheduled_analysis.py` creates one directory per run under `reports/<domain>/<run_id>/` and writes normalized summary files that can be checked into an artifact store, copied to object storage, or used locally.
+
+Keyword rank tracking uses Google Search Console `top_queries` from `google_data.json`. If Google data is missing, the snapshot is still written with `source_status: "missing"` so dashboards and automation can handle the run safely. DataForSEO gap data is used for opportunity discovery, not as a live rank-tracking source.
 
 ### Custom Configuration
 
@@ -351,9 +396,10 @@ Built with:
 - [x] WebMCP opportunity detection for actionable site flows
 - [x] `llms.txt` generator for analyzed websites
 - [x] Automated scheduling wrapper and manual GitHub Actions workflow
+- [x] Run history summaries and run-to-run comparisons
+- [x] Keyword rank tracking snapshots from Google Search Console data
+- [x] Static dashboard view for tracking over time
 - [ ] Slack/Email notifications
-- [ ] Dashboard view for tracking over time
-- [ ] Keyword rank tracking
 - [ ] Backlink monitoring
 
 ---

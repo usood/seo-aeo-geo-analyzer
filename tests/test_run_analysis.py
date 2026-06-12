@@ -20,3 +20,12 @@ def test_choice_7_checks_report_prerequisites():
         run_analysis.handle_choice("7")
 
     prereq.assert_called_once_with("7")
+
+
+def test_choice_12_generates_dashboard():
+    calls = []
+
+    with patch.object(run_analysis, "run_script", side_effect=lambda *args: calls.append(args)):
+        run_analysis.handle_choice("12")
+
+    assert calls == [("generate_dashboard.py", "Generate History Dashboard")]
