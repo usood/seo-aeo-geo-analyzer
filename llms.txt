@@ -7,6 +7,7 @@ Important notes:
 - Use `python -m pytest -q` before merging code changes.
 - Generated report HTML must escape untrusted JSON or API-sourced values.
 - Example configs use public brands only: Allbirds, Asana, and Duolingo.
+- Scheduled runs write generated artifacts under `reports/<domain>/<run_id>/`; do not commit those outputs.
 
 ## Project Docs
 
@@ -15,6 +16,7 @@ Important notes:
 - [Security policy](SECURITY.md): Vulnerability reporting and security expectations.
 - [Contributing guide](CONTRIBUTING.md): Development setup and pull request workflow.
 - [Changelog](CHANGELOG.md): Notable project changes.
+- [History/rank/dashboard plan](docs/plans/2026-06-12-history-rank-dashboard.md): Implementation plan for saved runs, rank tracking, and dashboards.
 
 ## Entry Points
 
@@ -24,6 +26,13 @@ Important notes:
 - [google_integration.py](google_integration.py): Google Search Console and GA4 integration.
 - [generate_report.py](generate_report.py): HTML report generation.
 - [export_data.py](export_data.py): CSV, Excel, and PDF export.
+- [scripts/run_scheduled_analysis.py](scripts/run_scheduled_analysis.py): Cron/CI-friendly scheduled analysis wrapper.
+- [compare_runs.py](compare_runs.py): Compare saved `run_summary.json` files.
+- [rank_tracker.py](rank_tracker.py): Create or compare GSC keyword rank snapshots.
+- [generate_dashboard.py](generate_dashboard.py): Generate a static dashboard over saved run summaries.
+- [generate_site_llms.py](generate_site_llms.py): Generate a recommended `llms.txt` for an analyzed website.
+- [webmcp_analyzer.py](webmcp_analyzer.py): Detect WebMCP opportunities for action-oriented site flows.
+- [agentic_browsing_check.py](agentic_browsing_check.py): Run Lighthouse agentic-browsing checks with graceful fallback.
 
 ## Optional
 

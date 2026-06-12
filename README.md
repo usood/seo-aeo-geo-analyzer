@@ -13,6 +13,7 @@ This project is actively maintained as an open-source SEO and AI-search analysis
 - **Supported runtime:** Python 3.8+.
 - **Verification command:** `python -m pytest -q`.
 - **Contribution model:** pull requests with tests for behavior changes.
+- **Recent maintenance evidence:** CI/security hygiene, issue and PR templates, scheduled analysis workflow, localization, AI-readiness checks, and run-history dashboard support are all documented in [CHANGELOG.md](CHANGELOG.md).
 - **Security reporting:** see [SECURITY.md](SECURITY.md).
 - **Release notes:** see [CHANGELOG.md](CHANGELOG.md).
 
@@ -117,6 +118,17 @@ Each scheduled run writes:
 - `rank_snapshot.json` - GSC keyword positions when Google Search Console data is available
 
 Scheduled reports are uploaded as workflow artifacts and should not be committed back to the repository.
+
+Generated run artifacts:
+
+| File | Created by | Purpose |
+| ---- | ---------- | ------- |
+| `scheduled_run.json` | `scripts/run_scheduled_analysis.py` | Records which scheduled steps ran and whether they succeeded |
+| `run_summary.json` | `utils/run_history.py` | Normalized metrics used by comparisons and dashboards |
+| `rank_snapshot.json` | `utils/rank_tracking.py` | Google Search Console keyword position snapshot |
+| `run_comparison.json` | `compare_runs.py` | Metric deltas plus new/lost opportunity keywords |
+| `rank_comparison.json` | `rank_tracker.py --previous ... --current ...` | Improved, declined, new, and lost keyword rankings |
+| `reports/index.html` | `generate_dashboard.py` | Static history dashboard over saved runs |
 
 ### 5. Compare Runs And Generate Dashboard
 
@@ -358,6 +370,13 @@ python -m pytest -q
 ```
 
 Security-sensitive changes should include regression tests where possible and should avoid committing generated reports, local `.env` files, API keys, or customer data.
+
+Documentation-sensitive changes should update the relevant user-facing docs in the same PR:
+
+- [CHANGELOG.md](CHANGELOG.md) for notable changes.
+- [README.md](README.md) for commands, config, roadmap, and workflow changes.
+- [docs/AI_READINESS.md](docs/AI_READINESS.md) for AI search, `llms.txt`, WebMCP, or agentic-browsing behavior.
+- [llms.txt](llms.txt) when entry points, test commands, or maintenance policies change.
 
 ## Contributing
 
