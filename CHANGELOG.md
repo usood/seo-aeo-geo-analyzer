@@ -4,6 +4,7 @@ All notable project changes are documented here.
 
 ## Unreleased
 
+- Added run history summaries, run-to-run comparison CLI, keyword rank snapshots, and a static dashboard generator.
 - Added maintenance, security, and AI readiness documentation.
 - Added root `llms.txt` for machine-readable project orientation.
 - Documented WebMCP, Lighthouse agentic browsing, and Google generative AI search guidance with source links.

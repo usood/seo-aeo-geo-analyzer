@@ -88,3 +88,8 @@ schedule:
     - agentic_browsing
     - report
     - export
+
+# Optional keyword tracking settings.
+# Rank snapshots are derived from Google Search Console data when google_integration.py runs.
+tracking:
+  keywords: []
