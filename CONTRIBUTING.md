@@ -47,6 +47,16 @@ Before submitting:
 - Check that no API keys are exposed
 - Check that generated report HTML escapes untrusted data when rendering new fields
 
+### Documentation
+
+When changing user-facing behavior, update docs in the same PR:
+
+- `CHANGELOG.md` for notable changes.
+- `README.md` for new commands, config options, workflows, or roadmap status.
+- `config.example.yaml` when configuration changes.
+- `docs/AI_READINESS.md` for AI search, `llms.txt`, WebMCP, or agentic-browsing behavior.
+- `llms.txt` when entry points, verification commands, or maintenance policies change.
+
 ### Configuration Examples
 
 When adding features that require configuration:
@@ -58,7 +68,7 @@ When adding features that require configuration:
 
 ```bash
 # Clone your fork
-git clone https://github.com/YOUR_USERNAME/seo-aeo-geo-analyzer.git
+git clone <your-fork-url>
 cd seo-aeo-geo-analyzer
 
 # Install dependencies

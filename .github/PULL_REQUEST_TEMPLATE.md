@@ -16,6 +16,7 @@
 
 - [ ] `python -m pytest -q` passes locally
 - [ ] Updated `config.example.yaml` and docs if config options changed
+- [ ] Updated `CHANGELOG.md`, `README.md`, and relevant docs for notable user-facing changes
 - [ ] No secrets, API keys, or private domains are committed
 - [ ] User-facing output that renders HTML is escaped via `utils/html_safety.py`
 - [ ] Added/updated tests where it makes sense

@@ -21,6 +21,7 @@ Helpful details for a security report:
 
 - Never commit `.env`, API keys, OAuth tokens, generated reports, or customer-specific data.
 - Sanitize example configurations and docs.
-- Escape untrusted data before rendering generated HTML reports.
+- Escape untrusted data before rendering generated HTML reports or static dashboards.
 - Keep `.latest_project` and report file access scoped to local report directories.
+- Treat `reports/<domain>/<run_id>/` artifacts as generated output; store them as CI artifacts or external files, not source-controlled project data.
 - Add regression tests for security-sensitive behavior when practical.

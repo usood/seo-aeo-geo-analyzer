@@ -47,7 +47,7 @@ The analyzer can also generate a recommended `llms.txt` **for the site being aud
 python generate_site_llms.py
 ```
 
-This reads the latest sitemap analysis (`analysis_data_*.json`) and writes `reports/<project>/<domain>-llms.txt`, a short curated index of the site's canonical entry points grouped by type (key pages, products/services, categories, content). To use it, host the file at `https://<domain>/llms.txt`.
+This reads the latest sitemap analysis (`analysis_data_*.json`) and writes `reports/<project>/<domain>-llms.txt`, a short curated index of the site's canonical entry points grouped by type (key pages, products/services, categories, content). To use it, host the file at `/<domain>/llms.txt` on the audited site, typically as `/llms.txt`.
 
 The same caveats apply: it is optional, is **not** a Google Search requirement, and does not affect ranking. It exists to help AI agents and LLM tools discover a site's most important pages.
 
