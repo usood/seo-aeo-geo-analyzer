@@ -84,6 +84,34 @@ python run_analysis.py
 python run_analysis.py --auto
 ```
 
+### 4. Scheduled Runs
+
+Scheduling is handled by a thin wrapper around the same CLI scripts:
+
+```bash
+python scripts/run_scheduled_analysis.py
+```
+
+By default it reads `schedule.steps` from `config.yaml`, writes outputs under `reports/<domain>/<run_id>/`, and exits non-zero if any step fails. You can run a smaller no-cost subset with:
+
+```bash
+python scripts/run_scheduled_analysis.py --steps collect_data,site_llms,webmcp,report
+```
+
+The GitHub Actions workflow at [.github/workflows/scheduled-analysis.yml](.github/workflows/scheduled-analysis.yml) is manual by default because the DataForSEO step can incur cost. Its default workflow inputs run a no-cost subset against a public example config:
+
+- `config_path`: `examples/configs/d2c-ecommerce.yaml`
+- `steps`: `collect_data,site_llms,webmcp`
+
+To run a full paid workflow, choose a real config and include `dataforseo` in the step list. Enable the commented cron block only after adding the required repository secrets:
+
+- `DATAFORSEO_LOGIN`
+- `DATAFORSEO_PASSWORD`
+- `PAGESPEED_API_KEY`
+- optional `GEMINI_API_KEY` or `OPENROUTER_API_KEY`
+
+Scheduled reports are uploaded as workflow artifacts and should not be committed back to the repository.
+
 ## Configuration
 
 Edit `config.yaml` to customize for your brand:
@@ -143,6 +171,7 @@ Pre-configured examples for different business types:
 | `generate_site_llms.py`     | Recommended `llms.txt` for the analyzed site (offline, free) | `<domain>-llms.txt`         | ~5s     |
 | `webmcp_analyzer.py`        | WebMCP opportunity scoring for action flows (offline, free)  | `webmcp_analysis.json`      | ~5s     |
 | `agentic_browsing_check.py` | Local Lighthouse agentic-browsing audit (graceful fallback)  | `agentic_browsing.json`     | ~1-3min |
+| `scripts/run_scheduled_analysis.py` | Scheduled wrapper for cron/CI runs                  | `reports/<domain>/<run_id>/` | varies  |
 
 ### Report Generation
 
@@ -321,7 +350,7 @@ Built with:
 - [x] Agentic browsing readiness checks
 - [x] WebMCP opportunity detection for actionable site flows
 - [x] `llms.txt` generator for analyzed websites
-- [ ] Automated scheduling (weekly/monthly reports)
+- [x] Automated scheduling wrapper and manual GitHub Actions workflow
 - [ ] Slack/Email notifications
 - [ ] Dashboard view for tracking over time
 - [ ] Keyword rank tracking

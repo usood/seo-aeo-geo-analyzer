@@ -30,8 +30,9 @@ pages = []
 # Try loading from config.yaml first
 try:
     import yaml
-    if os.path.exists('config.yaml'):
-        with open('config.yaml', 'r') as f:
+    config_path = os.getenv('SEO_ANALYZER_CONFIG', 'config.yaml')
+    if os.path.exists(config_path):
+        with open(config_path, 'r') as f:
             config = yaml.safe_load(f)
             raw_pages = config.get('analysis', {}).get('performance_urls', [])
             # Filter out empty strings

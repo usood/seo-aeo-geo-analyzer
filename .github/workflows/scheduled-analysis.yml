@@ -1,0 +1,63 @@
+name: Scheduled Analysis
+
+# Opt-in workflow. It is manual by default because DataForSEO steps can incur cost.
+# To enable a weekly cron, uncomment the schedule block below.
+#
+# on:
+#   schedule:
+#     - cron: "0 6 * * 1"
+#
+on:
+  workflow_dispatch:
+    inputs:
+      config_path:
+        description: "Config file to use"
+        required: true
+        default: "examples/configs/d2c-ecommerce.yaml"
+      steps:
+        description: "Comma-separated steps. Default is no-cost collection/readiness only."
+        required: false
+        default: "collect_data,site_llms,webmcp"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: scheduled-analysis-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  run:
+    name: Run scheduled analysis
+    runs-on: ubuntu-latest
+    env:
+      DATAFORSEO_LOGIN: ${{ secrets.DATAFORSEO_LOGIN }}
+      DATAFORSEO_PASSWORD: ${{ secrets.DATAFORSEO_PASSWORD }}
+      PAGESPEED_API_KEY: ${{ secrets.PAGESPEED_API_KEY }}
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run analysis
+        run: |
+          if [ -n "${{ inputs.steps }}" ]; then
+            python scripts/run_scheduled_analysis.py --config "${{ inputs.config_path }}" --steps "${{ inputs.steps }}"
+          else
+            python scripts/run_scheduled_analysis.py --config "${{ inputs.config_path }}"
+          fi
+
+      - name: Upload generated reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: scheduled-analysis-reports
+          path: reports/
+          if-no-files-found: error
